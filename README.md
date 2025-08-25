@@ -22,7 +22,7 @@ It supports management of:
 
 ## Features
 - CRUD APIs for core RBAC entities
-- Assign/remove roles to users
+- Assign/remove roles for users
 - Assign/remove permissions to roles
 - Get user’s access rights via multi-table join
 - PostgreSQL schema with UUID primary keys
