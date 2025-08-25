@@ -29,6 +29,13 @@ CREATE TABLE action_types (
     action_key VARCHAR(50) UNIQUE NOT NULL,
     description TEXT
 );
+-- Map permissions to namespaces and action types
+CREATE TABLE resource_access (
+    permission_id UUID REFERENCES permissions(permission_id) ON DELETE CASCADE,
+    namespace_id UUID REFERENCES namespaces(namespace_id) ON DELETE CASCADE,
+    action_type_id UUID REFERENCES action_types(action_type_id) ON DELETE CASCADE,
+    PRIMARY KEY (permission_id, namespace_id, action_type_id)
+);
 CREATE TABLE user_roles (
     user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
     role_id UUID REFERENCES roles(role_id) ON DELETE CASCADE,
