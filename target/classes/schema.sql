@@ -1,5 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE TABLE users (
+CREATE TABLE "users" (
     user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE action_types (
     description TEXT
 );
 CREATE TABLE user_roles (
-    user_id UUID REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id UUID REFERENCES "users"(user_id) ON DELETE CASCADE,
     role_id UUID REFERENCES roles(role_id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, role_id)
 );
