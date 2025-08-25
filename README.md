@@ -16,6 +16,7 @@ It supports management of:
 - Action Types
 - User-Role assignments
 - Role-Permission assignments
+- Resource access mappings (link permissions to namespaces and action types)
 - Querying a user’s complete access (role → permission → namespace → action)
 
 ---
