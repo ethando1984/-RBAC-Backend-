@@ -1,0 +1,10 @@
+type Role {
+  roleId: ID!
+  roleName: String!
+  description: String
+  systemRole: Boolean!
+}
+
+type Query {
+  userRoles(userId: ID!): [Role!]!
+}

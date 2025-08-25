@@ -13,6 +13,7 @@ public class RoleServiceImpl implements RoleService {
 
     public List<Role> getAll() { return mapper.findAll(); }
     public Role getById(UUID id) { return mapper.findById(id); }
+    public List<Role> getByUserId(UUID userId) { return mapper.findByUserId(userId); }
     public void create(Role entity) { mapper.insert(entity); }
     public void update(Role entity) { mapper.update(entity); }
     public void delete(UUID id) { mapper.delete(id); }
