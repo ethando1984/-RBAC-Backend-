@@ -13,6 +13,7 @@ public class UserServiceImpl implements UserService {
 
     public List<User> getAll() { return mapper.findAll(); }
     public User getById(UUID id) { return mapper.findById(id); }
+    public User findByUsername(String username) { return mapper.findByUsername(username); }
     public void create(User entity) { mapper.insert(entity); }
     public void update(User entity) { mapper.update(entity); }
     public void delete(UUID id) { mapper.delete(id); }
