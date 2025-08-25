@@ -14,6 +14,10 @@ public class PermissionController {
     @GetMapping public List<Permission> getAll() { return service.getAll(); }
     @GetMapping("/{id}") public Permission getById(@PathVariable UUID id) { return service.getById(id); }
     @PostMapping public void create(@RequestBody Permission entity) { service.create(entity); }
-    @PutMapping("/{id}") public void update(@PathVariable UUID id, @RequestBody Permission entity) { service.update(entity); }
+    @PutMapping("/{id}")
+    public void update(@PathVariable UUID id, @RequestBody Permission entity) {
+        entity.setPermissionId(id);
+        service.update(entity);
+    }
     @DeleteMapping("/{id}") public void delete(@PathVariable UUID id) { service.delete(id); }
 }

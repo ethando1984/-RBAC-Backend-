@@ -14,6 +14,10 @@ public class RoleController {
     @GetMapping public List<Role> getAll() { return service.getAll(); }
     @GetMapping("/{id}") public Role getById(@PathVariable UUID id) { return service.getById(id); }
     @PostMapping public void create(@RequestBody Role entity) { service.create(entity); }
-    @PutMapping("/{id}") public void update(@PathVariable UUID id, @RequestBody Role entity) { service.update(entity); }
+    @PutMapping("/{id}")
+    public void update(@PathVariable UUID id, @RequestBody Role entity) {
+        entity.setRoleId(id);
+        service.update(entity);
+    }
     @DeleteMapping("/{id}") public void delete(@PathVariable UUID id) { service.delete(id); }
 }
