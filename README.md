@@ -1,11 +1,11 @@
-# RBAC Backend (Spring Boot 3 + MyBatis + PostgreSQL)
+# RBAC Backend (Spring Boot 3 + MyBatis + H2)
 
 ## Overview
 This project implements a **Role-Based Access Control (RBAC)** backend using:
 - **Spring Boot 3.x**
 - **Java 17**
 - **MyBatis** (annotation-based mappers)
-- **PostgreSQL**
+- **H2 in-memory database**
 - **Lombok**
 
 It supports management of:
@@ -26,7 +26,7 @@ It supports management of:
 - Assign/remove roles for users
 - Assign/remove permissions to roles
 - Get user’s access rights via multi-table join
-- PostgreSQL schema with UUID primary keys
+- In-memory H2 schema with UUID primary keys
 - Annotation-based MyBatis mappers (no XML)
 - DTO support for nested access results
 
@@ -35,21 +35,17 @@ It supports management of:
 ## Prerequisites
 - **Java 17**
 - **Maven 3.8+**
-- **PostgreSQL 13+**
 
 ---
 
 ## Database Setup
-1. Create a PostgreSQL database:
-   ```sql
-   CREATE DATABASE rbacdb;
-   ```
-2. Update `src/main/resources/application.yml` with your database credentials.
-3. Start the application:
+The application uses an in-memory H2 database and initializes the schema automatically at startup.
+
+1. Start the application:
    ```bash
    mvn spring-boot:run
    ```
-4. The schema will be created automatically at startup.
+2. Access the H2 console at `/h2-console` if needed.
 
 ## RBAC Best Practices
 
