@@ -4,15 +4,15 @@ spring:
     username: sa
     password: ""
     driver-class-name: org.h2.Driver
-
   h2:
     console:
       enabled: true
 
-  mybatis:
-    type-aliases-package: com.aitech.rbac.model
-    configuration:
-      map-underscore-to-camel-case: true
+mybatis:
+  type-aliases-package: com.aitech.rbac.model
+  type-handlers-package: com.aitech.rbac.typehandler
+  configuration:
+    map-underscore-to-camel-case: true
 
 server:
   port: 8080
