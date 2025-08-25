@@ -1,6 +1,5 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE users (
-    user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
@@ -9,23 +8,23 @@ CREATE TABLE users (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE roles (
-    role_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    role_id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     role_name VARCHAR(50) UNIQUE NOT NULL,
     description TEXT,
     is_system_role BOOLEAN NOT NULL DEFAULT FALSE
 );
 CREATE TABLE permissions (
-    permission_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    permission_id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     permission_name VARCHAR(100) UNIQUE NOT NULL,
     description TEXT
 );
 CREATE TABLE namespaces (
-    namespace_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    namespace_id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     namespace_key VARCHAR(50) UNIQUE NOT NULL,
     description TEXT
 );
 CREATE TABLE action_types (
-    action_type_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    action_type_id UUID PRIMARY KEY DEFAULT RANDOM_UUID(),
     action_key VARCHAR(50) UNIQUE NOT NULL,
     description TEXT
 );
