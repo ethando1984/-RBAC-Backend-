@@ -15,6 +15,9 @@ public interface UserMapper {
     @Select("SELECT * FROM users WHERE user_id = #{id}")
     User findById(UUID id);
 
+    @Select("SELECT * FROM users WHERE username = #{username}")
+    User findByUsername(String username);
+
     @Insert("INSERT INTO users(user_id, username, email, password_hash, is_active, created_at, updated_at) " +
             "VALUES(#{userId}, #{username}, #{email}, #{passwordHash}, #{isActive}, #{createdAt}, #{updatedAt})")
     void insert(User user);
