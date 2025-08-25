@@ -43,3 +43,20 @@ It supports management of:
 1. Create a PostgreSQL database:
    ```sql
    CREATE DATABASE rbacdb;
+   ```
+2. Update `src/main/resources/application.yml` with your database credentials.
+3. Start the application:
+   ```bash
+   mvn spring-boot:run
+   ```
+4. The schema will be created automatically at startup.
+
+## RBAC Best Practices
+
+- **Principle of least privilege** – grant users only the permissions they need.
+- **Keep role hierarchies simple** to avoid confusing chains of inheritance.
+- **Separate duties** by splitting high‑risk tasks across multiple roles.
+- **Review roles and permissions regularly** to remove obsolete access.
+- **Document roles and permissions** so stakeholders understand their purpose.
+- **Namespace resources when possible** to support multi‑tenancy and isolation.
+- **Audit changes** to roles and permissions for accountability.
