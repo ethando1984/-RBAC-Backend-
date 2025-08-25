@@ -14,6 +14,10 @@ public class UserRoleController {
     @GetMapping public List<UserRole> getAll() { return service.getAll(); }
     @GetMapping("/{id}") public UserRole getById(@PathVariable UUID id) { return service.getById(id); }
     @PostMapping public void create(@RequestBody UserRole entity) { service.create(entity); }
-    @PutMapping("/{id}") public void update(@PathVariable UUID id, @RequestBody UserRole entity) { service.update(entity); }
+    @PutMapping("/{id}")
+    public void update(@PathVariable UUID id, @RequestBody UserRole entity) {
+        entity.setUserId(id);
+        service.update(entity);
+    }
     @DeleteMapping("/{id}") public void delete(@PathVariable UUID id) { service.delete(id); }
 }

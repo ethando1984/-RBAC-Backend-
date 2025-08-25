@@ -14,6 +14,10 @@ public class NamespaceController {
     @GetMapping public List<Namespace> getAll() { return service.getAll(); }
     @GetMapping("/{id}") public Namespace getById(@PathVariable UUID id) { return service.getById(id); }
     @PostMapping public void create(@RequestBody Namespace entity) { service.create(entity); }
-    @PutMapping("/{id}") public void update(@PathVariable UUID id, @RequestBody Namespace entity) { service.update(entity); }
+    @PutMapping("/{id}")
+    public void update(@PathVariable UUID id, @RequestBody Namespace entity) {
+        entity.setNamespaceId(id);
+        service.update(entity);
+    }
     @DeleteMapping("/{id}") public void delete(@PathVariable UUID id) { service.delete(id); }
 }
