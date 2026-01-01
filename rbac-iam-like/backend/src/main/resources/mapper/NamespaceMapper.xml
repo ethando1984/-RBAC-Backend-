@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.NamespaceMapper">
+    
+    <!-- Find All Namespaces -->
+    <select id="findAll" resultType="com.aitech.rbac.model.Namespace">
+        SELECT * FROM namespaces
+    </select>
+
+    <!-- Find Namespace by ID -->
+    <select id="findById" resultType="com.aitech.rbac.model.Namespace">
+        SELECT * FROM namespaces WHERE namespace_id = #{id}
+    </select>
+
+    <!-- Insert Namespace -->
+    <insert id="insert" parameterType="com.aitech.rbac.model.Namespace">
+        INSERT INTO namespaces(namespace_id, namespace_key, description)
+        VALUES(#{namespaceId}, #{namespaceKey}, #{description})
+    </insert>
+
+    <!-- Update Namespace -->
+    <update id="update" parameterType="com.aitech.rbac.model.Namespace">
+        UPDATE namespaces
+        SET namespace_key = #{namespaceKey},
+            description = #{description}
+        WHERE namespace_id = #{namespaceId}
+    </update>
+
+    <!-- Delete Namespace -->
+    <delete id="delete">
+        DELETE FROM namespaces WHERE namespace_id = #{id}
+    </delete>
+
+</mapper>

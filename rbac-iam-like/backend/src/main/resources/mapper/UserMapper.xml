@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.UserMapper">
+    
+    <!-- Result Map for User with Roles -->
+    <resultMap id="UserWithRolesResultMap" type="com.aitech.rbac.model.User">
+        <id property="userId" column="user_id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="passwordHash" column="password_hash"/>
+        <result property="active" column="is_active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <collection property="roles" ofType="com.aitech.rbac.model.Role"
+                    select="com.aitech.rbac.mapper.RoleMapper.findByUserId"
+                    column="user_id"/>
+    </resultMap>
+
+    <!-- Find All Users -->
+    <select id="findAll" resultMap="UserWithRolesResultMap">
+        SELECT * FROM "users"
+    </select>
+
+    <!-- Find User by ID -->
+    <select id="findById" resultMap="UserWithRolesResultMap">
+        SELECT * FROM "users" WHERE user_id = #{id}
+    </select>
+
+    <!-- Find User by Username -->
+    <select id="findByUsername" resultType="com.aitech.rbac.model.User">
+        SELECT * FROM "users" WHERE username = #{username}
+    </select>
+
+    <!-- Insert User -->
+    <insert id="insert" parameterType="com.aitech.rbac.model.User">
+        INSERT INTO "users"(user_id, username, email, password_hash, is_active, created_at, updated_at)
+        VALUES(#{userId}, #{username}, #{email}, #{passwordHash}, #{active}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- Update User -->
+    <update id="update" parameterType="com.aitech.rbac.model.User">
+        UPDATE "users"
+        SET username = #{username},
+            email = #{email},
+            password_hash = #{passwordHash},
+            is_active = #{active},
+            updated_at = #{updatedAt}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- Delete User -->
+    <delete id="delete">
+        DELETE FROM "users" WHERE user_id = #{id}
+    </delete>
+
+</mapper>

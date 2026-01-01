@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.ResourceAccessMapper">
+    
+    <!-- Insert Resource Access -->
+    <insert id="insert" parameterType="com.aitech.rbac.model.ResourceAccess">
+        INSERT INTO resource_access(mapping_id, permission_id, namespace_id, action_type_id)
+        VALUES(#{mappingId}, #{permissionId}, #{namespaceId}, #{actionTypeId})
+    </insert>
+
+    <!-- Delete Resource Access -->
+    <delete id="delete" parameterType="com.aitech.rbac.model.ResourceAccess">
+        DELETE FROM resource_access
+        WHERE permission_id = #{permissionId}
+          AND namespace_id = #{namespaceId}
+          AND action_type_id = #{actionTypeId}
+    </delete>
+
+    <!-- Find by Permission ID -->
+    <select id="findByPermissionId" resultType="com.aitech.rbac.model.ResourceAccess">
+        SELECT * FROM resource_access WHERE permission_id = #{permissionId}
+    </select>
+
+    <!-- Find All Resource Access -->
+    <select id="findAll" resultType="com.aitech.rbac.model.ResourceAccess">
+        SELECT * FROM resource_access
+    </select>
+
+</mapper>
