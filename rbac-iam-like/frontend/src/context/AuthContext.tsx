@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { authApi, api } from '../api/client';
+import { api } from '../api/client';
 
 interface AuthContextType {
     user: any | null;
@@ -20,8 +20,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const fetchProfile = async () => {
         try {
-            const profileRes = await authApi.me();
-            const userData = profileRes.data;
+            const userData = await api.auth.me();
             setUser(userData);
             if (userData?.userId) {
                 const accessRes = await api.users.getAccess(userData.userId);
@@ -60,17 +59,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const can = (namespace: string, action: string) => {
         if (!effectiveAccess) return false;
         // Super admin check or iterate roles/permissions
-        return effectiveAccess.roles.some((role: any) =>
-            role.permissions.some((p: any) =>
+        return effectiveAccess.roles?.some((role: any) =>
+            role.permissions?.some((p: any) =>
                 (p.namespaceKey === namespace || p.namespaceKey === '*') &&
                 (p.actionKey === action || p.actionKey === '*')
             )
-        );
+        ) || false;
     };
 
     const hasRole = (roleName: string) => {
         if (!effectiveAccess) return false;
-        return effectiveAccess.roles.some((role: any) => role.roleName === roleName);
+        return effectiveAccess.roles?.some((role: any) => role.roleName === roleName) || false;
     };
 
     return (

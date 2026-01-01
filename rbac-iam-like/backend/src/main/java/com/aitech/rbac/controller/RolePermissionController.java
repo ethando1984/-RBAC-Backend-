@@ -5,7 +5,7 @@ import com.aitech.rbac.service.RolePermissionService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/role_permissions")
+@RequestMapping("/api/role-permissions")
 public class RolePermissionController {
     private final RolePermissionService service;
 

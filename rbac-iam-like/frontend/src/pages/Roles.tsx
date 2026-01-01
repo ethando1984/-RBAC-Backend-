@@ -24,7 +24,7 @@ export default function Roles() {
 
     const { data: rolesData, isLoading } = useQuery({
         queryKey: ['roles', page, pageSize, search],
-        queryFn: () => api.roles.list(page, pageSize, search)
+        queryFn: () => api.roles.list({ page, size: pageSize, search })
     });
 
     const { data: allPermissions } = useQuery({
@@ -35,7 +35,7 @@ export default function Roles() {
 
     const { data: currentRolePermissions } = useQuery({
         queryKey: ['role-permissions', editingRole?.roleId],
-        queryFn: () => api.roles.getPermissions(editingRole?.roleId),
+        queryFn: () => api.roles.listPermissions(editingRole?.roleId),
         enabled: !!editingRole && isPermissionsModalOpen
     });
 

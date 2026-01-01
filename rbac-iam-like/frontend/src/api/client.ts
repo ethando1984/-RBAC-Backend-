@@ -2,14 +2,11 @@ import axios from 'axios';
 
 const API_URL = 'http://localhost:8080/api';
 
-export const client = axios.create({
+const axiosInstance = axios.create({
     baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 });
 
-client.interceptors.request.use((config) => {
+axiosInstance.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -17,70 +14,65 @@ client.interceptors.request.use((config) => {
     return config;
 });
 
-export const authApi = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    login: (data: any) => client.post('/auth/login', data),
-    me: () => client.get('/auth/me'),
-};
-
 export const api = {
+    auth: {
+        login: (credentials: any) => axiosInstance.post('/auth/login', credentials).then(res => res.data),
+        me: () => axiosInstance.get('/auth/me').then(res => res.data),
+    },
     users: {
-        list: (page?: number, size?: number, search?: string) => client.get('/users', { params: { page, size, search } }).then(r => r.data),
-        get: (id: string) => client.get(`/users/${id}`).then(r => r.data),
-        getAccess: (id: string) => client.get(`/access/${id}`).then(r => r.data),
-        create: (data: any) => client.post('/users', data),
-        update: (id: string, data: any) => client.put(`/users/${id}`, data),
-        delete: (id: string) => client.delete(`/users/${id}`),
+        list: (params?: any) => axiosInstance.get('/users', { params }).then(res => res.data),
+        get: (id: string) => axiosInstance.get(`/users/${id}`).then(res => res.data),
+        create: (data: any) => axiosInstance.post('/users', data).then(res => res.data),
+        update: (id: string, data: any) => axiosInstance.put(`/users/${id}`, data).then(res => res.data),
+        delete: (id: string) => axiosInstance.delete(`/users/${id}`),
+        assignRole: (userId: string, roleId: string) => axiosInstance.post('/user-roles', { userId, roleId }),
+        removeRole: (userId: string, roleId: string) => axiosInstance.delete('/user-roles', { data: { userId, roleId } }),
+        getAccess: (id: string) => axiosInstance.get(`/access/${id}`).then(res => res.data),
     },
     roles: {
-        list: (page?: number, size?: number, search?: string) => client.get('/roles', { params: { page, size, search } }).then(r => r.data),
-        get: (id: string) => client.get(`/roles/${id}`).then(r => r.data),
-        getPermissions: (id: string) => client.get(`/role_permissions/${id}`).then(r => r.data),
-        create: (data: any) => client.post('/roles', data),
-        update: (id: string, data: any) => client.put(`/roles/${id}`, data),
-        delete: (id: string) => client.delete(`/roles/${id}`),
-        listAllPermissions: () => client.get('/role_permissions').then(r => r.data),
+        list: (params?: any) => axiosInstance.get('/roles', { params }).then(res => res.data),
+        get: (id: string) => axiosInstance.get(`/roles/${id}`).then(res => res.data),
+        create: (data: any) => axiosInstance.post('/roles', data).then(res => res.data),
+        update: (id: string, data: any) => axiosInstance.put(`/roles/${id}`, data).then(res => res.data),
+        delete: (id: string) => axiosInstance.delete(`/roles/${id}`),
+        listPermissions: (roleId: string) => axiosInstance.get(`/roles/${roleId}/permissions`).then(res => res.data),
+        listAllPermissions: () => axiosInstance.get('/role-permissions').then(res => res.data),
     },
     permissions: {
-        list: () => client.get('/permissions').then(r => r.data),
-        get: (id: string) => client.get(`/permissions/${id}`).then(r => r.data),
-        getResourceAccess: (id: string) => client.get(`/resource_access/${id}`).then(r => r.data),
-        listAllResourceAccess: () => client.get('/resource_access').then(r => r.data),
-        create: (data: any) => client.post('/permissions', data),
-        update: (id: string, data: any) => client.put(`/permissions/${id}`, data),
-        delete: (id: string) => client.delete(`/permissions/${id}`),
+        list: () => axiosInstance.get('/permissions').then(res => res.data), // Legacy?
+        listAllResourceAccess: () => axiosInstance.get('/resource-access').then(res => res.data),
     },
     policies: {
-        seal: (id: string, scopeMatrix: any) => client.post(`/policies/${id}/seal`, scopeMatrix).then(r => r.data),
-        getDocument: (id: string) => client.get(`/policies/${id}/document`).then(r => r.data),
-        updateDocument: (id: string, policyDoc: any) => client.put(`/policies/${id}/document`, policyDoc).then(r => r.data),
-        evaluate: (request: any) => client.post('/policies/evaluate', request).then(r => r.data),
+        search: (params?: any) => axiosInstance.get('/policies', { params }).then(res => res.data),
+        getImpact: (id: string) => axiosInstance.get(`/policies/${id}/impact`).then(res => res.data),
+        seal: (id: string, data: { matrix: any, confirmImpact: boolean }) => axiosInstance.post(`/policies/${id}/seal`, data).then(res => res.data),
+        getVersions: (id: string) => axiosInstance.get(`/policies/${id}/versions`).then(res => res.data),
+        rollback: (id: string, versionId: string) => axiosInstance.post(`/policies/${id}/rollback/${versionId}`).then(res => res.data),
     },
-    assignments: {
-        assignRole: (userId: string, roleId: string) => client.post('/user_roles', { userId, roleId }),
-        revokeRole: (userId: string, roleId: string) => client.delete('/user_roles', { data: { userId, roleId } }),
-        assignPermission: (roleId: string, permissionId: string) => client.post('/role_permissions', { roleId, permissionId }),
-        revokePermission: (roleId: string, permissionId: string) => client.delete('/role_permissions', { data: { roleId, permissionId } }),
-        assignResourceAccess: (data: { permissionId: string, namespaceId: string, actionTypeId: string }) => client.post('/resource_access', data),
-        revokeResourceAccess: (data: { permissionId: string, namespaceId: string, actionTypeId: string }) => client.delete('/resource_access', { data }),
+    audit: {
+        list: (params?: any) => axiosInstance.get('/audit-logs', { params }).then(res => res.data),
+    },
+    registry: {
+        get: () => axiosInstance.get('/registry').then(res => res.data),
     },
     namespaces: {
-        list: () => client.get('/namespaces').then(r => r.data),
+        list: () => axiosInstance.get('/namespaces').then(res => res.data),
     },
     actionTypes: {
-        list: () => client.get('/action_types').then(r => r.data),
+        list: () => axiosInstance.get('/action-types').then(res => res.data),
+    },
+    assignments: {
+        assignPermission: (roleId: string, permissionId: string) => axiosInstance.post(`/roles/${roleId}/permissions/${permissionId}`),
+        revokePermission: (roleId: string, permissionId: string) => axiosInstance.delete(`/roles/${roleId}/permissions/${permissionId}`),
+        assignResourceAccess: (data: any) => axiosInstance.post('/resource-access', data),
+        revokeResourceAccess: (data: any) => axiosInstance.delete('/resource-access', { data }),
     },
     orders: {
-        list: () => client.get('/orders').then(r => r.data),
-        create: (data: any) => client.post('/orders', data),
-        update: (id: string, data: any) => client.put(`/orders/${id}`, data),
-        delete: (id: string) => client.delete(`/orders/${id}`),
+        list: () => axiosInstance.get('/orders').then(res => res.data),
+        get: (id: string) => axiosInstance.get(`/orders/${id}`).then(res => res.data),
     },
     inventory: {
-        list: () => client.get('/inventory').then(r => r.data),
-        get: (id: string) => client.get(`/inventory/${id}`).then(r => r.data),
-        create: (data: any) => client.post('/inventory', data),
-        update: (id: string, data: any) => client.put(`/inventory/${id}`, data),
-        delete: (id: string) => client.delete(`/inventory/${id}`),
+        list: () => axiosInstance.get('/inventory').then(res => res.data),
+        get: (id: string) => axiosInstance.get(`/inventory/${id}`).then(res => res.data),
     }
 };

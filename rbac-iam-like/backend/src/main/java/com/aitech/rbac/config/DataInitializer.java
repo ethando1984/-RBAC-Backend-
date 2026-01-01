@@ -24,6 +24,7 @@ public class DataInitializer {
                         ResourceAccessMapper resourceAccessMapper,
                         OrderMapper orderMapper,
                         ProductMapper productMapper,
+                        PolicyVersionMapper policyVersionMapper,
                         PasswordEncoder passwordEncoder) {
                 return args -> {
                         if (userMapper.findByUsername("admin") != null) {
@@ -33,12 +34,19 @@ public class DataInitializer {
                         System.out.println("Starting Database Seeding with Rich IAM Examples...");
 
                         // 1. Create Users
-                        User admin = createUser(userMapper, passwordEncoder, "admin", "admin@aitech.com", "admin");
+                        User admin = createUser(userMapper, passwordEncoder, "admin", "admin@aitech.com", "admin123");
                         User manager = createUser(userMapper, passwordEncoder, "manager", "manager@aitech.com",
-                                        "manager");
-                        User editor = createUser(userMapper, passwordEncoder, "editor", "editor@aitech.com", "editor");
-                        User viewer = createUser(userMapper, passwordEncoder, "viewer", "viewer@aitech.com", "viewer");
-                        User sales = createUser(userMapper, passwordEncoder, "sales_rep", "sales@aitech.com", "sales");
+                                        "manager123");
+                        User editor = createUser(userMapper, passwordEncoder, "editor", "editor@aitech.com",
+                                        "editor123");
+                        User viewer = createUser(userMapper, passwordEncoder, "viewer", "viewer@aitech.com",
+                                        "viewer123");
+                        User sales = createUser(userMapper, passwordEncoder, "sales_rep", "sales@aitech.com",
+                                        "sales123");
+                        User support = createUser(userMapper, passwordEncoder, "bob_support", "bob@aitech.com",
+                                        "support123");
+                        User hr = createUser(userMapper, passwordEncoder, "alice_hr", "alice@aitech.com",
+                                        "hr123");
 
                         // 2. Create Namespaces (Domains)
                         Namespace globalNs = createNamespace(namespaceMapper, "*", "Global Domain (Wildcard)");
@@ -46,6 +54,7 @@ public class DataInitializer {
                         Namespace ordersNs = createNamespace(namespaceMapper, "orders", "Commercial Orders");
                         Namespace inventoryNs = createNamespace(namespaceMapper, "inventory", "Warehouse Inventory");
                         Namespace marketingNs = createNamespace(namespaceMapper, "marketing", "Marketing Campaigns");
+                        Namespace hrNs = createNamespace(namespaceMapper, "hr", "Human Resources");
 
                         // 3. Create Action Types
                         ActionType allAct = createActionType(actionTypeMapper, "*", "Full Control (Wildcard)");
@@ -71,6 +80,8 @@ public class DataInitializer {
                         Permission marketingCampaigns = createPermission(permissionMapper, "MARKETING_ADMIN",
                                         "marketing:Admin",
                                         "Full control over campaigns");
+                        Permission hrPolicy = createPermission(permissionMapper, "HR_POLICY", "hr:Manage",
+                                        "Manage employee data");
 
                         // 5. Link Permissions to Resources (Low-level mappings)
                         createResourceAccess(resourceAccessMapper, fullAccess.getPermissionId(),
@@ -108,6 +119,9 @@ public class DataInitializer {
                         createResourceAccess(resourceAccessMapper, marketingCampaigns.getPermissionId(),
                                         marketingNs.getNamespaceId(), allAct.getActionTypeId());
 
+                        createResourceAccess(resourceAccessMapper, hrPolicy.getPermissionId(),
+                                        hrNs.getNamespaceId(), allAct.getActionTypeId());
+
                         // 6. Create Roles
                         Role superAdminRole = createRole(roleMapper, "Super Administrator", "Full system owner", true);
                         Role opsManagerRole = createRole(roleMapper, "Operations Manager",
@@ -118,6 +132,8 @@ public class DataInitializer {
                                         false);
                         Role marketingLeadRole = createRole(roleMapper, "Marketing Lead",
                                         "Manages campaigns and strategy", false);
+                        Role hrAdminRole = createRole(roleMapper, "HR Administrator", "Manages people and payroll",
+                                        false);
 
                         // 7. Assign Permissions to Roles
                         assignPermission(rolePermissionMapper, superAdminRole.getRoleId(),
@@ -132,17 +148,13 @@ public class DataInitializer {
                         assignPermission(rolePermissionMapper, warehouseClerkRole.getRoleId(),
                                         inventoryManage.getPermissionId());
 
-                        assignPermission(rolePermissionMapper, auditorRole.getRoleId(), iamAdmin.getPermissionId()); // Note:
-                                                                                                                     // should
-                                                                                                                     // probably
-                                                                                                                     // be
-                                                                                                                     // a
-                                                                                                                     // separate
-                                                                                                                     // READ_IAM
+                        assignPermission(rolePermissionMapper, auditorRole.getRoleId(), iamAdmin.getPermissionId());
                         assignPermission(rolePermissionMapper, auditorRole.getRoleId(), ordersView.getPermissionId());
 
                         assignPermission(rolePermissionMapper, marketingLeadRole.getRoleId(),
                                         marketingCampaigns.getPermissionId());
+
+                        assignPermission(rolePermissionMapper, hrAdminRole.getRoleId(), hrPolicy.getPermissionId());
 
                         // 8. Assign Roles to Users
                         assignRoleToUser(userRoleMapper, admin.getUserId(), superAdminRole.getRoleId());
@@ -150,11 +162,15 @@ public class DataInitializer {
                         assignRoleToUser(userRoleMapper, editor.getUserId(), warehouseClerkRole.getRoleId());
                         assignRoleToUser(userRoleMapper, viewer.getUserId(), auditorRole.getRoleId());
                         assignRoleToUser(userRoleMapper, sales.getUserId(), marketingLeadRole.getRoleId());
+                        assignRoleToUser(userRoleMapper, support.getUserId(), auditorRole.getRoleId());
+                        assignRoleToUser(userRoleMapper, hr.getUserId(), hrAdminRole.getRoleId());
 
-                        // 9. Seed Orders
+                        // 9. Seed Orders & Inventory
                         seedOrders(orderMapper);
-                        // 10. Seed Products
                         seedProducts(productMapper);
+
+                        // 10. Seed Initial Policy Versions
+                        seedPolicyVersions(policyVersionMapper, fullAccess, iamAdmin, marketingCampaigns);
 
                         System.out.println("Enhanced Database Seeding Completed.");
                 };
@@ -272,5 +288,80 @@ public class DataInitializer {
                 ur.setRoleId(roleId);
                 ur.setAssignedAt(LocalDateTime.now());
                 mapper.insert(ur);
+        }
+
+        private void seedPolicyVersions(PolicyVersionMapper mapper, Permission fullAccess, Permission iamAdmin,
+                        Permission marketing) {
+                // Create initial versions for a few policies to demonstrate version history
+
+                // FULLSYSTEMACCESS - Version 1 (Initial)
+                PolicyVersion fv1 = new PolicyVersion();
+                fv1.setVersionId(UUID.randomUUID());
+                fv1.setPermissionId(fullAccess.getPermissionId());
+                fv1.setVersionNumber(1);
+                fv1.setIsDefault(false);
+                fv1.setDocumentJson("{\"Version\":\"2026-01-01\",\"Id\":\"" + fullAccess.getPermissionId()
+                                + "\",\"Name\":\"FULLSYSTEMACCESS\",\"Statement\":[{\"Sid\":\"AllowSystemAccess\",\"Effect\":\"Allow\",\"Action\":[\"system:*\"],\"Resource\":[\"namespace/system/*\"]}]}");
+                fv1.setCreatedAt(LocalDateTime.now().minusDays(10));
+                fv1.setCreatedBy("SYSTEM");
+                mapper.insert(fv1);
+
+                // FULLSYSTEMACCESS - Version 2 (Current)
+                PolicyVersion fv2 = new PolicyVersion();
+                fv2.setVersionId(UUID.randomUUID());
+                fv2.setPermissionId(fullAccess.getPermissionId());
+                fv2.setVersionNumber(2);
+                fv2.setIsDefault(true);
+                fv2.setDocumentJson("{\"Version\":\"2026-01-01\",\"Id\":\"" + fullAccess.getPermissionId()
+                                + "\",\"Name\":\"FULLSYSTEMACCESS\",\"Statement\":[{\"Sid\":\"AllowSystemAccess\",\"Effect\":\"Allow\",\"Action\":[\"system:*\"],\"Resource\":[\"namespace/system/*\"]}]}");
+                fv2.setCreatedAt(LocalDateTime.now().minusDays(2));
+                fv2.setCreatedBy("admin");
+                mapper.insert(fv2);
+
+                // IAM_MANAGEMENT - Version 1 (Initial and Current)
+                PolicyVersion iv1 = new PolicyVersion();
+                iv1.setVersionId(UUID.randomUUID());
+                iv1.setPermissionId(iamAdmin.getPermissionId());
+                iv1.setVersionNumber(1);
+                iv1.setIsDefault(true);
+                iv1.setDocumentJson("{\"Version\":\"2026-01-01\",\"Id\":\"" + iamAdmin.getPermissionId()
+                                + "\",\"Name\":\"IAM_MANAGEMENT\",\"Statement\":[{\"Sid\":\"AllowIamAccess\",\"Effect\":\"Allow\",\"Action\":[\"iam:Admin\"],\"Resource\":[\"namespace/iam/*\"]}]}");
+                iv1.setCreatedAt(LocalDateTime.now().minusDays(5));
+                iv1.setCreatedBy("SYSTEM");
+                mapper.insert(iv1);
+
+                // MARKETING_ADMIN - Version 1, 2, 3 (demonstrate multiple versions)
+                PolicyVersion mv1 = new PolicyVersion();
+                mv1.setVersionId(UUID.randomUUID());
+                mv1.setPermissionId(marketing.getPermissionId());
+                mv1.setVersionNumber(1);
+                mv1.setIsDefault(false);
+                mv1.setDocumentJson("{\"Version\":\"2026-01-01\",\"Id\":\"" + marketing.getPermissionId()
+                                + "\",\"Name\":\"MARKETING_ADMIN\",\"Statement\":[{\"Sid\":\"AllowMarketingAccess\",\"Effect\":\"Allow\",\"Action\":[\"marketing:Read\"],\"Resource\":[\"namespace/marketing/*\"]}]}");
+                mv1.setCreatedAt(LocalDateTime.now().minusDays(15));
+                mv1.setCreatedBy("SYSTEM");
+                mapper.insert(mv1);
+
+                PolicyVersion mv2 = new PolicyVersion();
+                mv2.setVersionId(UUID.randomUUID());
+                mv2.setPermissionId(marketing.getPermissionId());
+                mv2.setVersionNumber(2);
+                mv2.setIsDefault(false);
+                mv2.setDocumentJson("{\"Version\":\"2026-01-01\",\"Id\":\"" + marketing.getPermissionId()
+                                + "\",\"Name\":\"MARKETING_ADMIN\",\"Statement\":[{\"Sid\":\"AllowMarketingAccess\",\"Effect\":\"Allow\",\"Action\":[\"marketing:Admin\"],\"Resource\":[\"namespace/marketing/*\"]}]}");
+                mv2.setCreatedAt(LocalDateTime.now().minusDays(8));
+                mv2.setCreatedBy("admin");
+                mapper.insert(mv2);
+
+                PolicyVersion mv3 = new PolicyVersion();
+                mv3.setVersionId(UUID.randomUUID());
+                mv3.setPermissionId(marketing.getPermissionId());
+                mv3.setVersionNumber(3);
+                mv3.setIsDefault(true);
+                mv3.setDocumentJson("{\"Version\":\"2026-01-01\",\"Id\":\"" + marketing.getPermissionId()
+                                + "\",\"Name\":\"MARKETING_ADMIN\",\"Statement\":[{\"Sid\":\"AllowMarketingAccess\",\"Effect\":\"Allow\",\"Action\":[\"marketing:*\"],\"Resource\":[\"namespace/marketing/*\"]}]}");
+                mv3.setCreatedAt(LocalDateTime.now().minusDays(3));
+                mv3.setCreatedBy("admin");
+                mapper.insert(mv3);
         }
 }

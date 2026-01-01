@@ -5,7 +5,7 @@ import com.aitech.rbac.service.ResourceAccessService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/resource_access")
+@RequestMapping("/api/resource-access")
 public class ResourceAccessController {
     private final ResourceAccessService service;
 

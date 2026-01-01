@@ -5,10 +5,13 @@ import com.aitech.rbac.service.UserRoleService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/user_roles")
+@RequestMapping("/api/user-roles")
 public class UserRoleController {
     private final UserRoleService service;
-    public UserRoleController(UserRoleService service) { this.service = service; }
+
+    public UserRoleController(UserRoleService service) {
+        this.service = service;
+    }
 
     @PostMapping
     public void create(@RequestBody UserRole entity) {

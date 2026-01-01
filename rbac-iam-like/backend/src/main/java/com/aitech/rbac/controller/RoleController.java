@@ -9,9 +9,11 @@ import java.util.*;
 @RequestMapping("/api/roles")
 public class RoleController {
     private final RoleService service;
+    private final com.aitech.rbac.service.RolePermissionService rolePermissionService;
 
-    public RoleController(RoleService service) {
+    public RoleController(RoleService service, com.aitech.rbac.service.RolePermissionService rolePermissionService) {
         this.service = service;
+        this.rolePermissionService = rolePermissionService;
     }
 
     @GetMapping
@@ -28,6 +30,11 @@ public class RoleController {
         return service.getById(id);
     }
 
+    @GetMapping("/{roleId}/permissions")
+    public java.util.List<com.aitech.rbac.model.RolePermission> getPermissions(@PathVariable UUID roleId) {
+        return rolePermissionService.getByRoleId(roleId);
+    }
+
     @PostMapping
     public void create(@RequestBody Role entity) {
         service.create(entity);
@@ -42,5 +49,21 @@ public class RoleController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
         service.delete(id);
+    }
+
+    @PostMapping("/{roleId}/permissions/{permissionId}")
+    public void assignPermission(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
+        com.aitech.rbac.model.RolePermission rp = new com.aitech.rbac.model.RolePermission();
+        rp.setRoleId(roleId);
+        rp.setPermissionId(permissionId);
+        rolePermissionService.create(rp);
+    }
+
+    @DeleteMapping("/{roleId}/permissions/{permissionId}")
+    public void revokePermission(@PathVariable UUID roleId, @PathVariable UUID permissionId) {
+        com.aitech.rbac.model.RolePermission rp = new com.aitech.rbac.model.RolePermission();
+        rp.setRoleId(roleId);
+        rp.setPermissionId(permissionId);
+        rolePermissionService.delete(rp);
     }
 }

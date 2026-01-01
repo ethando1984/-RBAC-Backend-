@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { PageShell } from './components/layout/PageShell';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
-import Users from './pages/Users';
+import Users from './pages/Users.tsx';
 import UserDetail from './pages/UserDetail';
 import Roles from './pages/Roles';
 import Policies from './pages/Policies';
@@ -12,6 +12,7 @@ import Inventory from './pages/Inventory';
 import Login from './pages/Login';
 import PermissionMatrix from './pages/PermissionMatrix';
 import Settings from './pages/Settings';
+import AuditLogs from './pages/AuditLogs';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -70,6 +71,7 @@ export default function App() {
               <Route element={<ProtectedRoute permission={{ namespace: 'policies', action: 'READ' }} />}>
                 <Route path="/policies" element={<Policies />} />
                 <Route path="/matrix" element={<PermissionMatrix />} />
+                <Route path="/audit-logs" element={<AuditLogs />} />
               </Route>
 
               <Route element={<ProtectedRoute permission={{ namespace: 'orders', action: 'READ' }} />}>

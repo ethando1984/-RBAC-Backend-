@@ -25,7 +25,7 @@ export default function Users() {
 
     const { data: usersData, isLoading } = useQuery({
         queryKey: ['users', page, pageSize, search],
-        queryFn: () => api.users.list(page, pageSize, search)
+        queryFn: () => api.users.list({ page, size: pageSize, search })
     });
 
     const { data: allRoles } = useQuery({
@@ -66,7 +66,7 @@ export default function Users() {
     const currentUserRoles = userAccessData?.[0]?.roles || [];
 
     const assignRoleMutation = useMutation({
-        mutationFn: ({ userId, roleId }: { userId: string, roleId: string }) => api.assignments.assignRole(userId, roleId),
+        mutationFn: ({ userId, roleId }: { userId: string, roleId: string }) => api.users.assignRole(userId, roleId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             queryClient.invalidateQueries({ queryKey: ['user-access', editingUser?.userId] });
@@ -78,7 +78,7 @@ export default function Users() {
     });
 
     const revokeRoleMutation = useMutation({
-        mutationFn: ({ userId, roleId }: { userId: string, roleId: string }) => api.assignments.revokeRole(userId, roleId),
+        mutationFn: ({ userId, roleId }: { userId: string, roleId: string }) => api.users.removeRole(userId, roleId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
             queryClient.invalidateQueries({ queryKey: ['user-access', editingUser?.userId] });

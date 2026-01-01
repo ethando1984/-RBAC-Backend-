@@ -6,15 +6,18 @@ import com.github.pagehelper.PageInfo;
 import com.aitech.rbac.mapper.UserMapper;
 import com.aitech.rbac.model.User;
 import com.aitech.rbac.service.UserService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserMapper mapper) {
+    public UserServiceImpl(UserMapper mapper, PasswordEncoder passwordEncoder) {
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public List<User> getAll() {
@@ -44,11 +47,35 @@ public class UserServiceImpl implements UserService {
             entity.setCreatedAt(java.time.LocalDateTime.now());
         }
         entity.setUpdatedAt(java.time.LocalDateTime.now());
+
+        // Encode password if provided
+        if (entity.getPasswordHash() != null && !entity.getPasswordHash().isEmpty()) {
+            // Check if it's already encoded (bcrypt starts with $2a$, $2b$, or $2y$)
+            if (!entity.getPasswordHash().startsWith("$2")) {
+                entity.setPasswordHash(passwordEncoder.encode(entity.getPasswordHash()));
+            }
+        }
+
         mapper.insert(entity);
     }
 
     public void update(User entity) {
         entity.setUpdatedAt(java.time.LocalDateTime.now());
+
+        // Handle password update: only encode if a new password is provided and it's
+        // not already encoded
+        if (entity.getPasswordHash() != null && !entity.getPasswordHash().isEmpty()) {
+            if (!entity.getPasswordHash().startsWith("$2")) {
+                entity.setPasswordHash(passwordEncoder.encode(entity.getPasswordHash()));
+            }
+        } else {
+            // If no password provided, preserve the existing one
+            User existing = mapper.findById(entity.getUserId());
+            if (existing != null) {
+                entity.setPasswordHash(existing.getPasswordHash());
+            }
+        }
+
         mapper.update(entity);
     }
 

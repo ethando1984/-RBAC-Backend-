@@ -19,6 +19,11 @@
     <!-- Find All Users -->
     <select id="findAll" resultMap="UserWithRolesResultMap">
         SELECT * FROM "users"
+        <where>
+            <if test="search != null and search != ''">
+                (LOWER(username) LIKE LOWER(CONCAT('%', #{search}, '%')) OR LOWER(email) LIKE LOWER(CONCAT('%', #{search}, '%')))
+            </if>
+        </where>
     </select>
 
     <!-- Find User by ID -->

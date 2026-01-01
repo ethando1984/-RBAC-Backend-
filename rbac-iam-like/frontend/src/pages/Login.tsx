@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
-import { authApi } from '../api/client';
+import { api } from '../api/client';
 import { Lock, User, ShieldAlert, Shield, CheckCircle, ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Login() {
@@ -17,8 +17,8 @@ export default function Login() {
         setError('');
         setIsSubmitting(true);
         try {
-            const res = await authApi.login({ username, password });
-            await login(res.data.token);
+            const res = await api.auth.login({ username, password });
+            await login(res.token);
             navigate('/');
         } catch (err: any) {
             setError(err.response?.data?.message || 'Invalid username or password');
@@ -105,8 +105,8 @@ export default function Login() {
                             disabled={isSubmitting}
                             type="submit"
                             className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all transform hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3 ${isSubmitting
-                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-xl shadow-primary-500/30'
+                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white shadow-xl shadow-primary-500/30'
                                 }`}
                         >
                             {isSubmitting ? (

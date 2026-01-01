@@ -1,0 +1,121 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.aitech:rbac-full-backend >--------------------
+[INFO] Building rbac-full-backend 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.2.5:run (default-cli) > test-compile @ rbac-full-backend >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ rbac-full-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 12 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ rbac-full-backend ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ rbac-full-backend ---
+[INFO] skip non existing resourceDirectory F:\java\rbac-backend\rbac-iam-like\backend\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.11.0:testCompile (default-testCompile) @ rbac-full-backend ---
+[INFO] Nothing to compile - all classes are up to date
+[INFO] 
+[INFO] <<< spring-boot:3.2.5:run (default-cli) < test-compile @ rbac-full-backend <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.2.5:run (default-cli) @ rbac-full-backend ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+2026-01-02T01:31:09.922+07:00  INFO 26960 --- [           main] com.aitech.rbac.RbacApplication          : Starting RbacApplication using Java 17.0.10 with PID 26960 (F:\java\rbac-backend\rbac-iam-like\backend\target\classes started by thanh in F:\java\rbac-backend\rbac-iam-like\backend)
+2026-01-02T01:31:09.924+07:00  INFO 26960 --- [           main] com.aitech.rbac.RbacApplication          : No active profile set, falling back to 1 default profile: "default"
+2026-01-02T01:31:11.231+07:00  INFO 26960 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-01-02T01:31:11.241+07:00  INFO 26960 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-02T01:31:11.241+07:00  INFO 26960 --- [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-01-02T01:31:11.303+07:00  INFO 26960 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-02T01:31:11.304+07:00  INFO 26960 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1328 ms
+2026-01-02T01:31:11.340+07:00  INFO 26960 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-01-02T01:31:11.509+07:00  INFO 26960 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:rbacdb user=SA
+2026-01-02T01:31:11.509+07:00  INFO 26960 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-01-02T01:31:11.520+07:00  INFO 26960 --- [           main] o.s.b.a.h2.H2ConsoleAutoConfiguration    : H2 console available at '/h2-console'. Database available at 'jdbc:h2:mem:rbacdb'
+2026-01-02T01:31:12.737+07:00  INFO 26960 --- [           main] efaultSchemaResourceGraphQlSourceBuilder : Loaded 1 resource(s) in the GraphQL schema.
+2026-01-02T01:31:12.953+07:00  INFO 26960 --- [           main] o.s.b.a.g.GraphQlAutoConfiguration       : GraphQL schema inspection:
+	Unmapped fields: {}
+	Unmapped registrations: {}
+	Skipped types: []
+2026-01-02T01:31:12.967+07:00  INFO 26960 --- [           main] s.b.a.g.s.GraphQlWebMvcAutoConfiguration : GraphQL endpoint HTTP POST /graphql
+2026-01-02T01:31:13.022+07:00  INFO 26960 --- [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@6297cb4b, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@65d6640, org.springframework.security.web.context.SecurityContextHolderFilter@4cf01c41, org.springframework.security.web.header.HeaderWriterFilter@4a5066f5, org.springframework.web.filter.CorsFilter@672d8370, org.springframework.security.web.authentication.logout.LogoutFilter@7d156f8f, com.aitech.rbac.config.JwtAuthenticationFilter@5ba1b62e, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@55f6f965, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@40ddf339, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@13137835, org.springframework.security.web.session.SessionManagementFilter@79ec57b8, org.springframework.security.web.access.ExceptionTranslationFilter@66b40dd3, org.springframework.security.web.access.intercept.AuthorizationFilter@6150afc6]
+2026-01-02T01:31:13.239+07:00  INFO 26960 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path ''
+2026-01-02T01:31:13.248+07:00  INFO 26960 --- [           main] com.aitech.rbac.RbacApplication          : Started RbacApplication in 3.694 seconds (process running for 3.989)
+2026-01-02T01:31:13.253+07:00  INFO 26960 --- [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-01-02T01:31:13.290+07:00 ERROR 26960 --- [           main] o.s.boot.SpringApplication               : Application run failed
+
+java.lang.IllegalArgumentException: Result Maps collection does not contain value for com.aitech.rbac.mapper.PolicyVersionMapper.findByPermissionId-ResultMap
+	at org.apache.ibatis.session.Configuration$StrictMap.get(Configuration.java:1097) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.session.Configuration.getResultMap(Configuration.java:794) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.builder.MapperBuilderAssistant.getStatementResultMaps(MapperBuilderAssistant.java:321) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.builder.MapperBuilderAssistant.addMappedStatement(MapperBuilderAssistant.java:214) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.lambda$parseStatement$2(MapperAnnotationBuilder.java:365) ~[mybatis-3.5.14.jar:3.5.14]
+	at java.base/java.util.Optional.ifPresent(Optional.java:178) ~[na:na]
+	at org.apache.ibatis.builder.annotation.MapperAnnotationBuilder.parseStatement(MapperAnnotationBuilder.java:302) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.builder.annotation.MethodResolver.resolve(MethodResolver.java:33) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.session.Configuration.lambda$buildAllStatements$3(Configuration.java:943) ~[mybatis-3.5.14.jar:3.5.14]
+	at java.base/java.util.Collection.removeIf(Collection.java:576) ~[na:na]
+	at org.apache.ibatis.session.Configuration.buildAllStatements(Configuration.java:942) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.session.Configuration.hasStatement(Configuration.java:912) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.session.Configuration.hasStatement(Configuration.java:907) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperMethod$SqlCommand.resolveMappedStatement(MapperMethod.java:253) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperMethod$SqlCommand.<init>(MapperMethod.java:225) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperMethod.<init>(MapperMethod.java:53) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy.lambda$cachedInvoker$0(MapperProxy.java:96) ~[mybatis-3.5.14.jar:3.5.14]
+	at java.base/java.util.concurrent.ConcurrentHashMap.computeIfAbsent(ConcurrentHashMap.java:1708) ~[na:na]
+	at org.apache.ibatis.util.MapUtil.computeIfAbsent(MapUtil.java:36) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy.cachedInvoker(MapperProxy.java:94) ~[mybatis-3.5.14.jar:3.5.14]
+	at org.apache.ibatis.binding.MapperProxy.invoke(MapperProxy.java:86) ~[mybatis-3.5.14.jar:3.5.14]
+	at jdk.proxy2/jdk.proxy2.$Proxy75.findByUsername(Unknown Source) ~[na:na]
+	at com.aitech.rbac.config.DataInitializer.lambda$initData$0(DataInitializer.java:29) ~[classes/:na]
+	at org.springframework.boot.SpringApplication.lambda$callRunner$5(SpringApplication.java:790) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.util.function.ThrowingConsumer$1.acceptWithException(ThrowingConsumer.java:83) ~[spring-core-6.1.6.jar:6.1.6]
+	at org.springframework.util.function.ThrowingConsumer.accept(ThrowingConsumer.java:60) ~[spring-core-6.1.6.jar:6.1.6]
+	at org.springframework.util.function.ThrowingConsumer$1.accept(ThrowingConsumer.java:88) ~[spring-core-6.1.6.jar:6.1.6]
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:798) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.callRunner(SpringApplication.java:789) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.lambda$callRunners$3(SpringApplication.java:774) ~[spring-boot-3.2.5.jar:3.2.5]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:183) ~[na:na]
+	at java.base/java.util.stream.SortedOps$SizedRefSortingSink.end(SortedOps.java:357) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:510) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:150) ~[na:na]
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:173) ~[na:na]
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234) ~[na:na]
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596) ~[na:na]
+	at org.springframework.boot.SpringApplication.callRunners(SpringApplication.java:774) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:341) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1354) ~[spring-boot-3.2.5.jar:3.2.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1343) ~[spring-boot-3.2.5.jar:3.2.5]
+	at com.aitech.rbac.RbacApplication.main(RbacApplication.java:11) ~[classes/:na]
+
+2026-01-02T01:31:13.313+07:00  INFO 26960 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-01-02T01:31:13.316+07:00  INFO 26960 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  6.142 s
+[INFO] Finished at: 2026-01-02T01:31:13+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.springframework.boot:spring-boot-maven-plugin:3.2.5:run (default-cli) on project rbac-full-backend: Process terminated with exit code: 1 -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoExecutionException

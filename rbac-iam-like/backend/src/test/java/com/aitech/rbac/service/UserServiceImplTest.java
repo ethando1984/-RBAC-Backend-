@@ -20,23 +20,26 @@ class UserServiceImplTest {
     @Mock
     private UserMapper mapper;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     private UserServiceImpl service;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        service = new UserServiceImpl(mapper);
+        service = new UserServiceImpl(mapper, passwordEncoder);
     }
 
     @Test
     void getAllDelegatesToMapper() {
         List<User> users = List.of(new User());
-        when(mapper.findAll()).thenReturn(users);
+        when(mapper.findAll(null)).thenReturn(users);
 
         List<User> result = service.getAll();
 
         assertEquals(users, result);
-        verify(mapper).findAll();
+        verify(mapper).findAll(null);
     }
 
     @Test
