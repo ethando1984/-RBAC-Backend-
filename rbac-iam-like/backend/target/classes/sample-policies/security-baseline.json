@@ -1,0 +1,60 @@
+{
+    "Version": "2026-01-01",
+    "Id": "sample-security-baseline-policy",
+    "Name": "Sample Security Baseline",
+    "Description": "Security policies with conditional access and explicit denies",
+    "Statement": [
+        {
+            "Sid": "AllowReadFromTrustedNetwork",
+            "Effect": "Allow",
+            "Action": [
+                "*:read"
+            ],
+            "Resource": [
+                "*"
+            ],
+            "Condition": {
+                "IpAddress": {
+                    "aws:SourceIp": "10.0.0.0/8"
+                }
+            }
+        },
+        {
+            "Sid": "DenyDeleteFromPublicIP",
+            "Effect": "Deny",
+            "Action": [
+                "*:delete"
+            ],
+            "Resource": [
+                "*"
+            ],
+            "Condition": {
+                "IpAddress": {
+                    "aws:SourceIp": "0.0.0.0/0"
+                }
+            }
+        },
+        {
+            "Sid": "RequireMFAForSensitiveActions",
+            "Effect": "Deny",
+            "Action": [
+                "iam:*",
+                "orders:delete",
+                "inventory:write"
+            ],
+            "Resource": [
+                "*"
+            ],
+            "Condition": {
+                "Bool": {
+                    "aws:MultiFactorAuthPresent": "false"
+                }
+            }
+        }
+    ],
+    "Meta": {
+        "createdBy": "system",
+        "policyType": "security-baseline",
+        "enforcesCompliance": true
+    }
+}

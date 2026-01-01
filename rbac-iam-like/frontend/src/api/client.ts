@@ -50,6 +50,12 @@ export const api = {
         update: (id: string, data: any) => client.put(`/permissions/${id}`, data),
         delete: (id: string) => client.delete(`/permissions/${id}`),
     },
+    policies: {
+        seal: (id: string, scopeMatrix: any) => client.post(`/policies/${id}/seal`, scopeMatrix).then(r => r.data),
+        getDocument: (id: string) => client.get(`/policies/${id}/document`).then(r => r.data),
+        updateDocument: (id: string, policyDoc: any) => client.put(`/policies/${id}/document`, policyDoc).then(r => r.data),
+        evaluate: (request: any) => client.post('/policies/evaluate', request).then(r => r.data),
+    },
     assignments: {
         assignRole: (userId: string, roleId: string) => client.post('/user_roles', { userId, roleId }),
         revokeRole: (userId: string, roleId: string) => client.delete('/user_roles', { data: { userId, roleId } }),

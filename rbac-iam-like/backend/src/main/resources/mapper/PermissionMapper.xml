@@ -8,6 +8,7 @@
         <result property="permissionName" column="permission_name"/>
         <result property="permissionKey" column="permission_key"/>
         <result property="description" column="description"/>
+        <result property="policyDocument" column="policy_document"/>
         <result property="resourceAccessCount" column="resource_access_count"/>
         <result property="attachedRoleCount" column="attached_role_count"/>
     </resultMap>
@@ -31,8 +32,8 @@
 
     <!-- Insert Permission -->
     <insert id="insert" parameterType="com.aitech.rbac.model.Permission">
-        INSERT INTO permissions(permission_id, permission_name, permission_key, description)
-        VALUES(#{permissionId}, #{permissionName}, #{permissionKey}, #{description})
+        INSERT INTO permissions(permission_id, permission_name, permission_key, description, policy_document)
+        VALUES(#{permissionId}, #{permissionName}, #{permissionKey}, #{description}, #{policyDocument})
     </insert>
 
     <!-- Update Permission -->
@@ -40,7 +41,8 @@
         UPDATE permissions
         SET permission_name = #{permissionName},
             permission_key = #{permissionKey},
-            description = #{description}
+            description = #{description},
+            policy_document = #{policyDocument}
         WHERE permission_id = #{permissionId}
     </update>
 

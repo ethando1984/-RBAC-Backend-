@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.PermissionMapper">
+    
+    <!-- Result Map for Permission with computed counts -->
+    <resultMap id="PermissionResultMap" type="com.aitech.rbac.model.Permission">
+        <id property="permissionId" column="permission_id"/>
+        <result property="permissionName" column="permission_name"/>
+        <result property="permissionKey" column="permission_key"/>
+        <result property="description" column="description"/>
+        <result property="policyDocument" column="policy_document"/>
+        <result property="resourceAccessCount" column="resource_access_count"/>
+        <result property="attachedRoleCount" column="attached_role_count"/>
+    </resultMap>
+
+    <!-- Find All Permissions with Counts -->
+    <select id="findAll" resultMap="PermissionResultMap">
+        SELECT p.*,
+               (SELECT COUNT(*) FROM resource_access ra WHERE ra.permission_id = p.permission_id) as resource_access_count,
+               (SELECT COUNT(*) FROM role_permissions rp WHERE rp.permission_id = p.permission_id) as attached_role_count
+        FROM permissions p
+    </select>
+
+    <!-- Find Permission by ID with Counts -->
+    <select id="findById" resultMap="PermissionResultMap">
+        SELECT p.*,
+               (SELECT COUNT(*) FROM resource_access ra WHERE ra.permission_id = p.permission_id) as resource_access_count,
+               (SELECT COUNT(*) FROM role_permissions rp WHERE rp.permission_id = p.permission_id) as attached_role_count
+        FROM permissions p
+        WHERE permission_id = #{id}
+    </select>
+
+    <!-- Insert Permission -->
+    <insert id="insert" parameterType="com.aitech.rbac.model.Permission">
+        INSERT INTO permissions(permission_id, permission_name, permission_key, description, policy_document)
+        VALUES(#{permissionId}, #{permissionName}, #{permissionKey}, #{description}, #{policyDocument})
+    </insert>
+
+    <!-- Update Permission -->
+    <update id="update" parameterType="com.aitech.rbac.model.Permission">
+        UPDATE permissions
+        SET permission_name = #{permissionName},
+            permission_key = #{permissionKey},
+            description = #{description},
+            policy_document = #{policyDocument}
+        WHERE permission_id = #{permissionId}
+    </update>
+
+    <!-- Delete Permission -->
+    <delete id="delete">
+        DELETE FROM permissions WHERE permission_id = #{id}
+    </delete>
+
+</mapper>

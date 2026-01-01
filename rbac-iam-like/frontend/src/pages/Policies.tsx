@@ -1,4 +1,4 @@
-import { FileKey, Plus, Search, Trash2, Edit, Fingerprint, Type, ShieldCheck, Box, Activity, Settings2, X, Link, AlertTriangle } from 'lucide-react';
+import { FileKey, Plus, Search, Trash2, Edit, Fingerprint, Type, ShieldCheck, Box, Activity, Settings2, X, Link, AlertTriangle, Lock, CheckCircle2, Copy } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
@@ -17,6 +17,8 @@ export default function Policies() {
     const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
     const [editingPolicy, setEditingPolicy] = useState<any>(null);
     const [formData, setFormData] = useState({ permissionName: '', permissionKey: '', description: '' });
+    const [sealResult, setSealResult] = useState<any>(null);
+    const [isSealModalOpen, setIsSealModalOpen] = useState(false);
 
     const { data: policies, isLoading } = useQuery({
         queryKey: ['permissions'],
@@ -78,6 +80,16 @@ export default function Policies() {
         }
     });
 
+    const sealPolicyMutation = useMutation({
+        mutationFn: ({ permissionId, scopeMatrix }: { permissionId: string, scopeMatrix: any }) =>
+            api.policies.seal(permissionId, scopeMatrix),
+        onSuccess: (data) => {
+            setSealResult(data);
+            setIsSealModalOpen(true);
+            queryClient.invalidateQueries({ queryKey: ['permissions'] });
+        }
+    });
+
     const openModal = (policy?: any) => {
         if (policy) {
             setEditingPolicy(policy);
@@ -125,6 +137,31 @@ export default function Policies() {
         } else {
             assignScopeMutation.mutate(data);
         }
+    };
+
+    const handleSealPolicy = () => {
+        if (!editingPolicy || !currentScope) return;
+
+        // Build the scope matrix from currentScope
+        // Format: {  namespace_key: { action_key: true/false } }
+        const scopeMatrix: any = {};
+
+        namespaces?.forEach((ns: any) => {
+            const nsKey = ns.namespaceKey;
+            scopeMatrix[nsKey] = {};
+
+            actionTypes?.forEach((at: any) => {
+                const isAssigned = currentScope.some(
+                    (s: any) => s.namespaceId === ns.namespaceId && s.actionTypeId === at.actionTypeId
+                );
+                scopeMatrix[nsKey][at.actionKey] = isAssigned;
+            });
+        });
+
+        sealPolicyMutation.mutate({
+            permissionId: editingPolicy.permissionId,
+            scopeMatrix
+        });
     };
 
     const filteredPolicies = (policies || []).filter((p: any) => {
@@ -447,10 +484,100 @@ export default function Policies() {
                         </div>
                     </div>
 
-                    <Button className="w-full rounded-2xl h-14 font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-500/20" onClick={closeModal}>
-                        Seal Scope Configuration
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button
+                            variant="outline"
+                            className="flex-1 rounded-2xl h-14 font-black uppercase tracking-widest text-xs"
+                            onClick={closeModal}
+                        >
+                            Close
+                        </Button>
+                        <Button
+                            className="flex-1 rounded-2xl h-14 font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-500/20 gap-2"
+                            onClick={handleSealPolicy}
+                            disabled={sealPolicyMutation.isPending}
+                        >
+                            <Lock size={16} />
+                            {sealPolicyMutation.isPending ? 'Sealing...' : 'Seal Policy'}
+                        </Button>
+                    </div>
                 </div>
+            </Modal>
+
+            {/* Seal Success Modal */}
+            <Modal
+                isOpen={isSealModalOpen}
+                onClose={() => { setIsSealModalOpen(false); setSealResult(null); }}
+                title="Policy Sealed Successfully"
+                description="The resource scope configuration has been converted to an AWS IAM-style policy document."
+                className="max-w-4xl"
+            >
+                {sealResult && (
+                    <div className="space-y-6">
+                        <div className="bg-emerald-50 border border-emerald-200 p-6 rounded-3xl flex items-start gap-4">
+                            <div className="p-3 bg-emerald-500 text-white rounded-2xl shadow-lg shadow-emerald-500/20">
+                                <CheckCircle2 size={24} />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-black text-emerald-900 uppercase tracking-tight">Configuration Sealed</h3>
+                                <p className="text-xs text-emerald-700 font-medium mt-1">
+                                    {sealResult.message}
+                                </p>
+                                {sealResult.affectedRoles > 0 && (
+                                    <div className="mt-3 flex items-center gap-2">
+                                        <span className="text-[10px] font-black text-emerald-600 bg-emerald-100 px-3 py-1.5 rounded-xl uppercase tracking-widest">
+                                            {sealResult.affectedRoles} {sealResult.affectedRoles === 1 ? 'Role' : 'Roles'} Affected
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Generated Policy Document</h4>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="gap-2 text-xs"
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(JSON.stringify(sealResult.policyDocument, null, 2));
+                                        alert('Policy JSON copied to clipboard!');
+                                    }}
+                                >
+                                    <Copy size={14} /> Copy JSON
+                                </Button>
+                            </div>
+                            <div className="bg-gray-900 text-gray-100 p-6 rounded-2xl overflow-auto max-h-96 custom-scrollbar">
+                                <pre className="text-xs font-mono leading-relaxed">
+                                    {JSON.stringify(sealResult.policyDocument, null, 2)}
+                                </pre>
+                            </div>
+                        </div>
+
+                        <div className="bg-amber-50/50 border border-amber-100/50 p-5 rounded-3xl">
+                            <div className="flex gap-3">
+                                <div className="p-2 bg-amber-100 text-amber-600 rounded-xl h-fit">
+                                    <AlertTriangle size={16} />
+                                </div>
+                                <div>
+                                    <h5 className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Policy Active</h5>
+                                    <p className="text-[11px] text-amber-700/80 font-medium leading-relaxed mt-1">
+                                        This policy is now active and will be evaluated immediately for all users with roles that have this permission assigned.
+                                        All access decisions will follow AWS IAM evaluation logic: <strong>Explicit Deny &gt; Allow &gt; Default Deny</strong>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Button
+                            className="w-full rounded-2xl h-14 font-black uppercase tracking-widest text-xs shadow-xl shadow-primary-500/20"
+                            onClick={() => { setIsSealModalOpen(false); setSealResult(null); closeModal(); }}
+                        >
+                            Close & Return
+                        </Button>
+                    </div>
+                )}
             </Modal>
         </div>
     );

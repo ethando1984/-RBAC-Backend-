@@ -1,0 +1,22 @@
+{
+    "Version": "2026-01-01",
+    "Id": "sample-full-access-policy",
+    "Name": "Sample Full System Access",
+    "Description": "Demonstrates AWS IAM-style policy with full system access",
+    "Statement": [
+        {
+            "Sid": "AllowAllActions",
+            "Effect": "Allow",
+            "Action": [
+                "*"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ],
+    "Meta": {
+        "createdBy": "system",
+        "policyType": "identity-based"
+    }
+}

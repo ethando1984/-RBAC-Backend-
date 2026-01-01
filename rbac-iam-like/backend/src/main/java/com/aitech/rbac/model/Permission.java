@@ -10,6 +10,7 @@ public class Permission {
     private String permissionName;
     private String permissionKey;
     private String description;
+    private String policyDocument; // JSON policy document (AWS IAM-like)
     private int resourceAccessCount;
     private int attachedRoleCount;
 }

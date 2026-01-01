@@ -1,5 +1,6 @@
 com\aitech\rbac\service\ActionTypeService.class
 com\aitech\rbac\service\impl\NamespaceServiceImpl.class
+com\aitech\rbac\model\policy\AccessRequest.class
 com\aitech\rbac\service\impl\ResourceAccessServiceImpl.class
 com\aitech\rbac\controller\ActionTypeController.class
 com\aitech\rbac\dto\AuthResponse.class
@@ -7,6 +8,7 @@ com\aitech\rbac\service\impl\UserAccessServiceImpl.class
 com\aitech\rbac\RbacApplication.class
 com\aitech\rbac\model\Permission.class
 com\aitech\rbac\service\ResourceAccessService.class
+com\aitech\rbac\service\impl\PolicyEvaluationServiceImpl.class
 com\aitech\rbac\mapper\UserAccessMapper.class
 com\aitech\rbac\service\RolePermissionService.class
 com\aitech\rbac\controller\UserRoleController.class
@@ -15,6 +17,7 @@ com\aitech\rbac\service\JwtService.class
 com\aitech\rbac\controller\UserGraphQLController.class
 com\aitech\rbac\mapper\PermissionMapper.class
 com\aitech\rbac\mapper\RoleMapper.class
+com\aitech\rbac\controller\PolicyController.class
 com\aitech\rbac\dto\LoginRequest.class
 com\aitech\rbac\mapper\NamespaceMapper.class
 com\aitech\rbac\mapper\ResourceAccessMapper.class
@@ -27,6 +30,7 @@ com\aitech\rbac\controller\PermissionController.class
 com\aitech\rbac\typehandler\UUIDTypeHandler.class
 com\aitech\rbac\controller\ResourceAccessController.class
 com\aitech\rbac\model\ActionType.class
+com\aitech\rbac\model\policy\AccessDecision.class
 com\aitech\rbac\service\UserAccessService.class
 com\aitech\rbac\controller\InventoryController.class
 com\aitech\rbac\dto\UserAccessDTO$RoleDTO.class
@@ -34,6 +38,7 @@ com\aitech\rbac\controller\RoleController.class
 com\aitech\rbac\config\JwtAuthenticationFilter.class
 com\aitech\rbac\controller\NamespaceController.class
 com\aitech\rbac\dto\UserAccessDTO$PermissionDTO.class
+com\aitech\rbac\service\PolicyEvaluationService.class
 com\aitech\rbac\service\UserRoleService.class
 com\aitech\rbac\controller\UserController.class
 com\aitech\rbac\model\UserRole.class
@@ -46,6 +51,7 @@ com\aitech\rbac\model\Role.class
 com\aitech\rbac\dto\UserDTO.class
 com\aitech\rbac\mapper\UserRoleMapper.class
 com\aitech\rbac\mapper\ActionTypeMapper.class
+com\aitech\rbac\model\policy\PolicyStatement$Effect.class
 com\aitech\rbac\service\NamespaceService.class
 com\aitech\rbac\service\impl\RoleServiceImpl.class
 com\aitech\rbac\mapper\OrderMapper.class
@@ -57,8 +63,10 @@ com\aitech\rbac\config\SecurityConfig.class
 com\aitech\rbac\dto\UserAccessFlatDTO.class
 com\aitech\rbac\model\User.class
 com\aitech\rbac\service\UserService.class
+com\aitech\rbac\model\policy\PolicyDocument.class
 com\aitech\rbac\service\impl\PermissionServiceImpl.class
 com\aitech\rbac\mapper\UserMapper.class
+com\aitech\rbac\model\policy\PolicyStatement.class
 com\aitech\rbac\model\Order.class
 com\aitech\rbac\controller\OrderController.class
 com\aitech\rbac\service\impl\UserServiceImpl.class

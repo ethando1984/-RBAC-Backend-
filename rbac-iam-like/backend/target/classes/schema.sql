@@ -17,7 +17,8 @@ CREATE TABLE permissions (
     permission_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
     permission_name VARCHAR(100) UNIQUE NOT NULL,
     permission_key VARCHAR(100) UNIQUE NOT NULL,
-    description TEXT
+    description TEXT,
+    policy_document TEXT
 );
 CREATE TABLE namespaces (
     namespace_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,

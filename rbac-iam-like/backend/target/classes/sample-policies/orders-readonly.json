@@ -1,0 +1,33 @@
+{
+    "Version": "2026-01-01",
+    "Id": "sample-orders-readonly-policy",
+    "Name": "Sample Orders Read-Only",
+    "Description": "Read-only access to order management",
+    "Statement": [
+        {
+            "Sid": "AllowOrdersRead",
+            "Effect": "Allow",
+            "Action": [
+                "orders:read"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "DenyOrdersModify",
+            "Effect": "Deny",
+            "Action": [
+                "orders:write",
+                "orders:delete"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+    ],
+    "Meta": {
+        "createdBy": "system",
+        "policyType": "identity-based"
+    }
+}

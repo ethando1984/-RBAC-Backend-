@@ -4,6 +4,7 @@ F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\config\SecurityConfig.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\config\JwtAuthenticationFilter.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\RolePermissionController.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\policy\PolicyStatement.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\RolePermissionService.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\JwtService.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\ActionType.java
@@ -17,11 +18,13 @@ F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\CustomUserDetailsService.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\ResourceAccessServiceImpl.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\UserRoleController.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\policy\AccessDecision.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\UserAccessService.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\OrderController.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\UserRoleMapper.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\Role.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\ResourceAccessMapper.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\PolicyEvaluationServiceImpl.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\PermissionMapper.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\User.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\UserGraphQLController.java
@@ -30,10 +33,13 @@ F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\PermissionServiceImpl.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\InventoryController.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\UserAccessServiceImpl.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\PolicyController.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\RolePermissionMapper.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\AuthController.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\policy\PolicyDocument.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\UserAccessMapper.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\UserRoleService.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\policy\AccessRequest.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\ResourceAccessService.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\NamespaceService.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\RoleService.java
@@ -43,6 +49,7 @@ F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\dto\Use
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\RolePermission.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\dto\UserAccessDTO.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\RbacApplication.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\PolicyEvaluationService.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\ActionTypeMapper.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\Namespace.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\UserRole.java
