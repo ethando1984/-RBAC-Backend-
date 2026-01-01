@@ -1,10 +1,13 @@
 import { FileKey, Plus, Trash2, Edit, Fingerprint, Type, ShieldCheck, Box, Activity, Settings2, Link, AlertTriangle, Lock, CheckCircle2, Copy } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import { Card, CardContent } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { useState, Fragment } from 'react';
+import { useState, Fragment, useMemo } from 'react';
+import { buildRegistryFromCrossProduct } from '../lib/registry';
+import { convertMatrixToPolicy, validatePolicy } from '../lib/policy-engine';
+import type { PermissionMatrix } from '../lib/policy-types';
 import { Menu, Transition } from '@headlessui/react';
 import { cn } from '../lib/utils';
 import { useViewParams } from '../hooks/useViewParams';
@@ -145,6 +148,36 @@ export default function Policies() {
             assignScopeMutation.mutate(data);
         }
     };
+
+    // Policy Engine Integration
+    const registry = useMemo(() => {
+        if (!namespaces || !actionTypes) return {};
+        return buildRegistryFromCrossProduct(namespaces, actionTypes);
+    }, [namespaces, actionTypes]);
+
+    const currentMatrix = useMemo(() => {
+        if (!currentScope || !namespaces || !actionTypes) return {};
+        const matrix: PermissionMatrix = {};
+
+        // Initialize with false
+        namespaces.forEach((ns: any) => {
+            matrix[ns.namespaceKey] = {};
+            actionTypes.forEach((at: any) => matrix[ns.namespaceKey][at.actionKey] = false);
+        });
+
+        // Populate from current scope
+        currentScope.forEach((scope: any) => {
+            const ns = namespaces.find((n: any) => n.namespaceId === scope.namespaceId);
+            const at = actionTypes.find((a: any) => a.actionTypeId === scope.actionTypeId);
+            if (ns && at) {
+                matrix[ns.namespaceKey][at.actionKey] = true;
+            }
+        });
+        return matrix;
+    }, [currentScope, namespaces, actionTypes]);
+
+    const policyPreview = useMemo(() => convertMatrixToPolicy(currentMatrix, registry), [currentMatrix, registry]);
+    const validationResults = useMemo(() => validatePolicy(policyPreview, registry), [policyPreview, registry]);
 
     const handleSealPolicy = () => {
         if (!editingPolicy || !currentScope) return;
@@ -585,8 +618,49 @@ export default function Policies() {
                             disabled={sealPolicyMutation.isPending}
                         >
                             <Lock size={16} />
-                            {sealPolicyMutation.isPending ? 'Sealing...' : 'Seal Policy'}
                         </Button>
+                    </div>
+
+                    {/* Live Policy Preview & Validation */}
+                    <div className="border-t border-gray-100 pt-6 mt-2">
+                        <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Live Policy Document Preview</h4>
+                            {validationResults.length > 0 && (
+                                <div className="flex items-center gap-2">
+                                    {validationResults.some(r => r.level === 'warning') && (
+                                        <span className="text-[10px] font-bold text-amber-500 bg-amber-50 px-2 py-0.5 rounded border border-amber-100 uppercase tracking-wide">
+                                            {validationResults.filter(r => r.level === 'warning').length} Warnings
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Validation Messages */}
+                        {validationResults.length > 0 && (
+                            <div className="mb-4 space-y-2">
+                                {validationResults.map((result, idx) => (
+                                    <div key={idx} className={cn(
+                                        "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium border",
+                                        result.level === 'warning' ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-rose-50 text-rose-700 border-rose-100"
+                                    )}>
+                                        <AlertTriangle size={14} className={result.level === 'warning' ? "text-amber-500" : "text-rose-500"} />
+                                        {result.msg}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="bg-gray-900 rounded-3xl p-6 overflow-hidden relative group/code">
+                            <div className="absolute right-4 top-4 opacity-0 group-hover/code:opacity-100 transition-opacity">
+                                <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white h-8 text-[10px]" onClick={() => navigator.clipboard.writeText(JSON.stringify(policyPreview, null, 2))}>
+                                    <Copy size={14} className="mr-2" /> Copy JSON
+                                </Button>
+                            </div>
+                            <pre className="font-mono text-[10px] leading-relaxed text-emerald-400 overflow-x-auto custom-scrollbar">
+                                {JSON.stringify(policyPreview, null, 2)}
+                            </pre>
+                        </div>
                     </div>
                 </div>
             </Modal>
