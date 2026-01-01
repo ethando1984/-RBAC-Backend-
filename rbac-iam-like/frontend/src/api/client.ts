@@ -60,5 +60,13 @@ export const api = {
     },
     actionTypes: {
         list: () => client.get('/action_types').then(r => r.data),
+    },
+    orders: {
+        list: () => client.get('/orders').then(r => r.data),
+        create: (data: any) => client.post('/orders', data),
+    },
+    inventory: {
+        list: () => client.get('/inventory').then(r => r.data),
+        create: (data: any) => client.post('/inventory', data),
     }
 };

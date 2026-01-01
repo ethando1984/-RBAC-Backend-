@@ -8,6 +8,7 @@ interface AuthContextType {
     logout: () => void;
     isLoading: boolean;
     can: (namespace: string, action: string) => boolean;
+    hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,8 +45,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, []);
 
     const login = async (token: string) => {
+        setIsLoading(true);
         localStorage.setItem('token', token);
         await fetchProfile();
+        setIsLoading(false);
     };
 
     const logout = () => {
@@ -65,8 +68,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         );
     };
 
+    const hasRole = (roleName: string) => {
+        if (!effectiveAccess) return false;
+        return effectiveAccess.roles.some((role: any) => role.roleName === roleName);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, effectiveAccess, login, logout, isLoading, can }}>
+        <AuthContext.Provider value={{ user, effectiveAccess, login, logout, isLoading, can, hasRole }}>
             {children}
         </AuthContext.Provider>
     );

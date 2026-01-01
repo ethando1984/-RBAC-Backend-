@@ -47,3 +47,19 @@ CREATE TABLE role_permissions (
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (role_id, permission_id)
 );
+CREATE TABLE orders (
+    order_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    customer_name VARCHAR(100) NOT NULL,
+    total_amount DECIMAL(10, 2) NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE products (
+    product_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    sku VARCHAR(50) UNIQUE NOT NULL,
+    price DECIMAL(10, 2) NOT NULL,
+    stock_quantity INT NOT NULL,
+    category VARCHAR(50)
+);

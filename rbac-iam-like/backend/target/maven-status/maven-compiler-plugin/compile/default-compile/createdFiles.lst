@@ -22,11 +22,13 @@ com\aitech\rbac\mapper\RolePermissionMapper.class
 com\aitech\rbac\model\RolePermission.class
 com\aitech\rbac\service\PermissionService.class
 com\aitech\rbac\controller\AuthController.class
+com\aitech\rbac\mapper\ProductMapper.class
 com\aitech\rbac\controller\PermissionController.class
 com\aitech\rbac\typehandler\UUIDTypeHandler.class
 com\aitech\rbac\controller\ResourceAccessController.class
 com\aitech\rbac\model\ActionType.class
 com\aitech\rbac\service\UserAccessService.class
+com\aitech\rbac\controller\InventoryController.class
 com\aitech\rbac\dto\UserAccessDTO$RoleDTO.class
 com\aitech\rbac\controller\RoleController.class
 com\aitech\rbac\config\JwtAuthenticationFilter.class
@@ -38,6 +40,7 @@ com\aitech\rbac\model\UserRole.class
 com\aitech\rbac\controller\RolePermissionController.class
 com\aitech\rbac\service\impl\UserRoleServiceImpl.class
 com\aitech\rbac\model\Namespace.class
+com\aitech\rbac\model\Product.class
 com\aitech\rbac\controller\UserAccessController.class
 com\aitech\rbac\model\Role.class
 com\aitech\rbac\dto\UserDTO.class
@@ -45,6 +48,7 @@ com\aitech\rbac\mapper\UserRoleMapper.class
 com\aitech\rbac\mapper\ActionTypeMapper.class
 com\aitech\rbac\service\NamespaceService.class
 com\aitech\rbac\service\impl\RoleServiceImpl.class
+com\aitech\rbac\mapper\OrderMapper.class
 com\aitech\rbac\config\DataInitializer.class
 com\aitech\rbac\config\OpenApiConfig.class
 com\aitech\rbac\service\impl\ActionTypeServiceImpl.class
@@ -55,6 +59,8 @@ com\aitech\rbac\model\User.class
 com\aitech\rbac\service\UserService.class
 com\aitech\rbac\service\impl\PermissionServiceImpl.class
 com\aitech\rbac\mapper\UserMapper.class
+com\aitech\rbac\model\Order.class
+com\aitech\rbac\controller\OrderController.class
 com\aitech\rbac\service\impl\UserServiceImpl.class
 com\aitech\rbac\service\impl\CustomUserDetailsService.class
 com\aitech\rbac\service\impl\RolePermissionServiceImpl.class

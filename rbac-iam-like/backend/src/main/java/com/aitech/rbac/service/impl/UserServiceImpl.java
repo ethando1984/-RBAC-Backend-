@@ -38,6 +38,7 @@ public class UserServiceImpl implements UserService {
     }
 
     public void update(User entity) {
+        entity.setUpdatedAt(java.time.LocalDateTime.now());
         mapper.update(entity);
     }
 

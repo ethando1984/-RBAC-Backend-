@@ -11,8 +11,9 @@ import Layout from './components/Layout';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
 import RoleDetail from './pages/RoleDetail';
-
 import PermissionDetail from './pages/PermissionDetail';
+import Orders from './pages/Orders';
+import Inventory from './pages/Inventory';
 import { RouteGuard } from './components/RouteGuard';
 
 const queryClient = new QueryClient();
@@ -45,14 +46,22 @@ function App() {
               <Route element={<ProtectedRoute />}>
                 <Route path="/" element={<Dashboard />} />
 
-                {/* IAM Management Routes - protected by system:WRITE mapping */}
-                <Route element={<RouteGuard namespace="system" action="WRITE" />}>
+                {/* IAM Management Routes */}
+                <Route element={<RouteGuard role="Super Administrator" />}>
                   <Route path="/users" element={<Users />} />
                   <Route path="/users/:id" element={<UserDetail />} />
                   <Route path="/roles" element={<Roles />} />
                   <Route path="/roles/:id" element={<RoleDetail />} />
                   <Route path="/policies" element={<Policies />} />
                   <Route path="/policies/:id" element={<PermissionDetail />} />
+                </Route>
+
+                {/* Business Domain Routes */}
+                <Route element={<RouteGuard namespace="orders" action="READ" />}>
+                  <Route path="/orders" element={<Orders />} />
+                </Route>
+                <Route element={<RouteGuard namespace="inventory" action="READ" />}>
+                  <Route path="/inventory" element={<Inventory />} />
                 </Route>
               </Route>
             </Routes>

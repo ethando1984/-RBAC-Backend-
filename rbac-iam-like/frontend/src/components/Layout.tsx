@@ -14,9 +14,11 @@ export default function Layout({ children }: { children: ReactNode }) {
 
     const menuItems = [
         { text: 'Dashboard', icon: <DashboardIcon />, path: '/', guard: null },
-        { text: 'Users', icon: <People />, path: '/users', guard: { ns: 'system', act: 'WRITE' } },
-        { text: 'Roles', icon: <Security />, path: '/roles', guard: { ns: 'system', act: 'WRITE' } },
-        { text: 'Policies', icon: <Policy />, path: '/policies', guard: { ns: 'system', act: 'WRITE' } },
+        { text: 'Users', icon: <People />, path: '/users', guard: { role: 'Super Administrator' } },
+        { text: 'Roles', icon: <Security />, path: '/roles', guard: { role: 'Super Administrator' } },
+        { text: 'Policies', icon: <Policy />, path: '/policies', guard: { role: 'Super Administrator' } },
+        { text: 'Orders', icon: <Policy />, path: '/orders', guard: { ns: 'orders', act: 'READ' } },
+        { text: 'Inventory', icon: <Security />, path: '/inventory', guard: { ns: 'inventory', act: 'READ' } },
     ];
 
     return (
@@ -56,7 +58,12 @@ export default function Layout({ children }: { children: ReactNode }) {
 
                             if (item.guard) {
                                 return (
-                                    <Guard key={item.text} namespace={item.guard.ns} action={item.guard.act}>
+                                    <Guard
+                                        key={item.text}
+                                        role={(item.guard as any).role}
+                                        namespace={(item.guard as any).ns}
+                                        action={(item.guard as any).act}
+                                    >
                                         {Item}
                                     </Guard>
                                 );

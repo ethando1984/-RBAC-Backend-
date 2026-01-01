@@ -4,12 +4,13 @@ import Layout from './Layout';
 import { Box, CircularProgress } from '@mui/material';
 
 interface RouteGuardProps {
-    namespace: string;
-    action: string;
+    namespace?: string;
+    action?: string;
+    role?: string;
 }
 
-export const RouteGuard = ({ namespace, action }: RouteGuardProps) => {
-    const { can, isLoading, user } = useAuth();
+export const RouteGuard = ({ namespace, action, role }: RouteGuardProps) => {
+    const { can, hasRole, isLoading, user } = useAuth();
 
     if (isLoading) {
         return (
@@ -23,7 +24,10 @@ export const RouteGuard = ({ namespace, action }: RouteGuardProps) => {
         return <Navigate to="/login" />;
     }
 
-    if (!can(namespace, action)) {
+    const hasPermission = (namespace && action) ? can(namespace, action) : true;
+    const hasRequiredRole = role ? hasRole(role) : true;
+
+    if (!hasPermission || !hasRequiredRole) {
         return <Navigate to="/" />; // Redirect to dashboard if no permission
     }
 

@@ -51,7 +51,8 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://127.0.0.1:5173",
-                "http://127.0.0.1:5174")); // Allow frontend
+                "http://127.0.0.1:5174"));
+        configuration.setAllowedOriginPatterns(java.util.Arrays.asList("*")); // Allow all patterns for dev
         configuration.setAllowedMethods(java.util.Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(java.util.Arrays.asList("*"));
         configuration.setAllowCredentials(true);

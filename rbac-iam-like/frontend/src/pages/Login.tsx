@@ -15,7 +15,7 @@ export default function Login() {
         e.preventDefault();
         try {
             const res = await authApi.login({ username, password });
-            login(res.data.token);
+            await login(res.data.token);
             navigate('/');
         } catch (err: any) {
             setError('Login failed');
