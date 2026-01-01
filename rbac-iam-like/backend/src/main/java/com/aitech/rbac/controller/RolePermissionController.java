@@ -23,6 +23,11 @@ public class RolePermissionController {
         service.delete(entity);
     }
 
+    @GetMapping
+    public java.util.List<RolePermission> listAll() {
+        return service.listAll();
+    }
+
     @GetMapping("/{roleId}")
     public java.util.List<RolePermission> getByRoleId(@PathVariable java.util.UUID roleId) {
         return service.getByRoleId(roleId);

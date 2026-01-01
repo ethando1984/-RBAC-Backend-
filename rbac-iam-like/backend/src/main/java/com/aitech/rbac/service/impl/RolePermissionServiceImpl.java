@@ -28,4 +28,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
     public java.util.List<RolePermission> getByRoleId(java.util.UUID roleId) {
         return mapper.findByRoleId(roleId);
     }
+
+    @Override
+    public java.util.List<RolePermission> listAll() {
+        return mapper.findAll();
+    }
 }

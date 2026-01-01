@@ -1,75 +1,87 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { PageShell } from './components/layout/PageShell';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
-import UserDetail from './pages/UserDetail';
 import Roles from './pages/Roles';
 import Policies from './pages/Policies';
-import Layout from './components/Layout';
-import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
-
-import RoleDetail from './pages/RoleDetail';
-import PermissionDetail from './pages/PermissionDetail';
 import Orders from './pages/Orders';
 import Inventory from './pages/Inventory';
-import { RouteGuard } from './components/RouteGuard';
+import Login from './pages/Login';
+import PermissionMatrix from './pages/PermissionMatrix';
 
-const queryClient = new QueryClient();
-const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-    primary: { main: '#90caf9' },
-    secondary: { main: '#f48fb1' },
-    background: { default: '#0d1117', paper: '#161b22' }
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: false,
+    },
   },
-  typography: { fontFamily: 'Inter, system-ui, sans-serif' }
 });
 
-const ProtectedRoute = () => {
-  const { user, isLoading } = useAuth();
-  if (isLoading) return null;
-  if (!user) return <Navigate to="/login" />;
-  return <Layout><Outlet /></Layout>;
+const ProtectedRoute = ({ children, permission }: { children?: React.ReactNode, permission?: { namespace: string, action: string } }) => {
+  const { user, isLoading, can, hasRole } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (permission) {
+    const isSuperAdmin = hasRole('Super Administrator');
+    if (!isSuperAdmin && !can(permission.namespace, permission.action)) {
+      return <Navigate to="/" replace />;
+    }
+  }
+
+  return children ? <>{children}</> : <Outlet />;
 };
 
-function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={darkTheme}>
-        <CssBaseline />
-        <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route element={<ProtectedRoute />}>
-                <Route path="/" element={<Dashboard />} />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
 
-                {/* IAM Management Routes */}
-                <Route element={<RouteGuard role="Super Administrator" />}>
-                  <Route path="/users" element={<Users />} />
-                  <Route path="/users/:id" element={<UserDetail />} />
-                  <Route path="/roles" element={<Roles />} />
-                  <Route path="/roles/:id" element={<RoleDetail />} />
-                  <Route path="/policies" element={<Policies />} />
-                  <Route path="/policies/:id" element={<PermissionDetail />} />
-                </Route>
+            <Route element={<ProtectedRoute><PageShell><Outlet /></PageShell></ProtectedRoute>}>
+              <Route path="/" element={<Dashboard />} />
 
-                {/* Business Domain Routes */}
-                <Route element={<RouteGuard namespace="orders" action="READ" />}>
-                  <Route path="/orders" element={<Orders />} />
-                </Route>
-                <Route element={<RouteGuard namespace="inventory" action="READ" />}>
-                  <Route path="/inventory" element={<Inventory />} />
-                </Route>
+              <Route element={<ProtectedRoute permission={{ namespace: 'users', action: 'READ' }} />}>
+                <Route path="/users" element={<Users />} />
               </Route>
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </ThemeProvider>
+
+              <Route element={<ProtectedRoute permission={{ namespace: 'roles', action: 'READ' }} />}>
+                <Route path="/roles" element={<Roles />} />
+              </Route>
+
+              <Route element={<ProtectedRoute permission={{ namespace: 'policies', action: 'READ' }} />}>
+                <Route path="/policies" element={<Policies />} />
+                <Route path="/matrix" element={<PermissionMatrix />} />
+              </Route>
+
+              <Route element={<ProtectedRoute permission={{ namespace: 'orders', action: 'READ' }} />}>
+                <Route path="/orders" element={<Orders />} />
+              </Route>
+
+              <Route element={<ProtectedRoute permission={{ namespace: 'inventory', action: 'READ' }} />}>
+                <Route path="/inventory" element={<Inventory />} />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
-
-export default App;

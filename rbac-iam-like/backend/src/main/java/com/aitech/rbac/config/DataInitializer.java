@@ -55,22 +55,29 @@ public class DataInitializer {
                         ActionType publishAct = createActionType(actionTypeMapper, "PUBLISH", "Go-live action");
 
                         // 4. Create Permissions (Logical Policies)
-                        Permission fullAccess = createPermission(permissionMapper, "FullSystemAccess",
+                        Permission fullAccess = createPermission(permissionMapper, "FULLSYSTEMACCESS", "system:*",
                                         "Unlimited access to all resources");
-                        Permission iamAdmin = createPermission(permissionMapper, "IAM_Management",
+                        Permission iamAdmin = createPermission(permissionMapper, "IAM_MANAGEMENT", "iam:Admin",
                                         "Manage users, roles and permissions");
-                        Permission inventoryManage = createPermission(permissionMapper, "Inventory_Management",
+                        Permission inventoryManage = createPermission(permissionMapper, "INVENTORY_MANAGEMENT",
+                                        "warehouse:Inventory",
                                         "Update warehouse stock");
-                        Permission ordersProcess = createPermission(permissionMapper, "Orders_Processing",
+                        Permission ordersProcess = createPermission(permissionMapper, "ORDERS_PROCESSING",
+                                        "order:Full",
                                         "Read and Write commercial orders");
-                        Permission ordersView = createPermission(permissionMapper, "Orders_ReadOnly",
+                        Permission ordersView = createPermission(permissionMapper, "ORDERS_READONLY",
+                                        "order:Audit",
                                         "View orders without modification");
-                        Permission marketingCampaigns = createPermission(permissionMapper, "Marketing_Admin",
+                        Permission marketingCampaigns = createPermission(permissionMapper, "MARKETING_ADMIN",
+                                        "marketing:Admin",
                                         "Full control over campaigns");
 
                         // 5. Link Permissions to Resources (Low-level mappings)
                         createResourceAccess(resourceAccessMapper, fullAccess.getPermissionId(),
                                         globalNs.getNamespaceId(),
+                                        allAct.getActionTypeId());
+                        createResourceAccess(resourceAccessMapper, fullAccess.getPermissionId(),
+                                        systemNs.getNamespaceId(),
                                         allAct.getActionTypeId());
 
                         createResourceAccess(resourceAccessMapper, iamAdmin.getPermissionId(),
@@ -90,6 +97,9 @@ public class DataInitializer {
                         createResourceAccess(resourceAccessMapper, ordersProcess.getPermissionId(),
                                         ordersNs.getNamespaceId(),
                                         writeAct.getActionTypeId());
+                        createResourceAccess(resourceAccessMapper, ordersProcess.getPermissionId(),
+                                        ordersNs.getNamespaceId(),
+                                        deleteAct.getActionTypeId());
 
                         createResourceAccess(resourceAccessMapper, ordersView.getPermissionId(),
                                         ordersNs.getNamespaceId(),
@@ -192,10 +202,11 @@ public class DataInitializer {
                 return a;
         }
 
-        private Permission createPermission(PermissionMapper mapper, String name, String desc) {
+        private Permission createPermission(PermissionMapper mapper, String name, String key, String desc) {
                 Permission p = new Permission();
                 p.setPermissionId(UUID.randomUUID());
                 p.setPermissionName(name);
+                p.setPermissionKey(key);
                 p.setDescription(desc);
                 mapper.insert(p);
                 return p;

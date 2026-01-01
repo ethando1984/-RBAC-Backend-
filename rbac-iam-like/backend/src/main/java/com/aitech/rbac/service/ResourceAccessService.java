@@ -15,4 +15,6 @@ public interface ResourceAccessService {
     void delete(ResourceAccess entity);
 
     java.util.List<ResourceAccess> getByPermissionId(java.util.UUID permissionId);
+
+    java.util.List<ResourceAccess> getAll();
 }

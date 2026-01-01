@@ -15,4 +15,7 @@ public interface RolePermissionMapper {
 
     @Select("SELECT * FROM role_permissions WHERE role_id = #{roleId}")
     java.util.List<RolePermission> findByRoleId(UUID roleId);
+
+    @Select("SELECT * FROM role_permissions")
+    java.util.List<RolePermission> findAll();
 }

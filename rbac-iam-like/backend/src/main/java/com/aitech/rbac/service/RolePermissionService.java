@@ -8,4 +8,6 @@ public interface RolePermissionService {
     void delete(RolePermission entity);
 
     java.util.List<RolePermission> getByRoleId(java.util.UUID roleId);
+
+    java.util.List<RolePermission> listAll();
 }

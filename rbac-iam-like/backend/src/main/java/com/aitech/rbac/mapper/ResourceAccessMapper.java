@@ -13,4 +13,7 @@ public interface ResourceAccessMapper {
 
     @Select("SELECT * FROM resource_access WHERE permission_id = #{permissionId}")
     java.util.List<ResourceAccess> findByPermissionId(java.util.UUID permissionId);
+
+    @Select("SELECT * FROM resource_access")
+    java.util.List<ResourceAccess> findAll();
 }

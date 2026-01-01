@@ -30,6 +30,7 @@ export const api = {
         getAccess: (id: string) => client.get(`/access/${id}`).then(r => r.data),
         create: (data: any) => client.post('/users', data),
         update: (id: string, data: any) => client.put(`/users/${id}`, data),
+        delete: (id: string) => client.delete(`/users/${id}`),
     },
     roles: {
         list: () => client.get('/roles').then(r => r.data),
@@ -38,11 +39,13 @@ export const api = {
         create: (data: any) => client.post('/roles', data),
         update: (id: string, data: any) => client.put(`/roles/${id}`, data),
         delete: (id: string) => client.delete(`/roles/${id}`),
+        listAllPermissions: () => client.get('/role_permissions').then(r => r.data),
     },
     permissions: {
         list: () => client.get('/permissions').then(r => r.data),
         get: (id: string) => client.get(`/permissions/${id}`).then(r => r.data),
         getResourceAccess: (id: string) => client.get(`/resource_access/${id}`).then(r => r.data),
+        listAllResourceAccess: () => client.get('/resource_access').then(r => r.data),
         create: (data: any) => client.post('/permissions', data),
         update: (id: string, data: any) => client.put(`/permissions/${id}`, data),
         delete: (id: string) => client.delete(`/permissions/${id}`),
@@ -64,9 +67,14 @@ export const api = {
     orders: {
         list: () => client.get('/orders').then(r => r.data),
         create: (data: any) => client.post('/orders', data),
+        update: (id: string, data: any) => client.put(`/orders/${id}`, data),
+        delete: (id: string) => client.delete(`/orders/${id}`),
     },
     inventory: {
         list: () => client.get('/inventory').then(r => r.data),
+        get: (id: string) => client.get(`/inventory/${id}`).then(r => r.data),
         create: (data: any) => client.post('/inventory', data),
+        update: (id: string, data: any) => client.put(`/inventory/${id}`, data),
+        delete: (id: string) => client.delete(`/inventory/${id}`),
     }
 };

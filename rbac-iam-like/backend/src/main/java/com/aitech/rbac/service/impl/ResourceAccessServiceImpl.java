@@ -30,4 +30,9 @@ public class ResourceAccessServiceImpl implements ResourceAccessService {
     public java.util.List<ResourceAccess> getByPermissionId(java.util.UUID permissionId) {
         return mapper.findByPermissionId(permissionId);
     }
+
+    @Override
+    public java.util.List<ResourceAccess> getAll() {
+        return mapper.findAll();
+    }
 }

@@ -8,5 +8,8 @@ import java.time.LocalDateTime;
 public class Permission {
     private UUID permissionId;
     private String permissionName;
+    private String permissionKey;
     private String description;
+    private int resourceAccessCount;
+    private int attachedRoleCount;
 }

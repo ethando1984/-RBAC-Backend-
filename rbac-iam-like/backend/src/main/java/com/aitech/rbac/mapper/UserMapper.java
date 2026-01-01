@@ -9,9 +9,29 @@ import java.util.UUID;
 @Mapper
 public interface UserMapper {
     @Select("SELECT * FROM \"users\"")
+    @Results({
+            @Result(property = "userId", column = "user_id", id = true),
+            @Result(property = "username", column = "username"),
+            @Result(property = "email", column = "email"),
+            @Result(property = "passwordHash", column = "password_hash"),
+            @Result(property = "isActive", column = "is_active"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at"),
+            @Result(property = "roles", column = "user_id", many = @Many(select = "com.aitech.rbac.mapper.RoleMapper.findByUserId"))
+    })
     List<User> findAll();
 
     @Select("SELECT * FROM \"users\" WHERE user_id = #{id}")
+    @Results({
+            @Result(property = "userId", column = "user_id", id = true),
+            @Result(property = "username", column = "username"),
+            @Result(property = "email", column = "email"),
+            @Result(property = "passwordHash", column = "password_hash"),
+            @Result(property = "isActive", column = "is_active"),
+            @Result(property = "createdAt", column = "created_at"),
+            @Result(property = "updatedAt", column = "updated_at"),
+            @Result(property = "roles", column = "user_id", many = @Many(select = "com.aitech.rbac.mapper.RoleMapper.findByUserId"))
+    })
     User findById(UUID id);
 
     @Select("SELECT * FROM \"users\" WHERE username = #{username}")

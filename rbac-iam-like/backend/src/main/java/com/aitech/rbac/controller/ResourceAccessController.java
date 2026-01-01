@@ -13,6 +13,11 @@ public class ResourceAccessController {
         this.service = service;
     }
 
+    @GetMapping
+    public java.util.List<ResourceAccess> listAll() {
+        return service.getAll();
+    }
+
     @PostMapping
     public void create(@RequestBody ResourceAccess entity) {
         service.create(entity);

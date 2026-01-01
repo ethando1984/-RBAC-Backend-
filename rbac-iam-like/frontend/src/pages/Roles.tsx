@@ -1,124 +1,348 @@
-import { DataGrid, type GridColDef } from '@mui/x-data-grid';
+import { ShieldCheck, Plus, ExternalLink, Settings2, Trash2, Edit, FileText, Info, FileKey, CheckSquare } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card';
+import { Badge } from '../components/ui/Badge';
+import { Modal } from '../components/ui/Modal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api/client';
-import { Box, Typography, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import { Edit, Delete, Add } from '@mui/icons-material';
+import { useState, Fragment } from 'react';
+import { Menu, Transition } from '@headlessui/react';
+import { cn } from '../lib/utils';
 
 export default function Roles() {
-    const { data: roles, isLoading } = useQuery({ queryKey: ['roles'], queryFn: api.roles.list });
-    const navigate = useNavigate();
     const queryClient = useQueryClient();
-
-    const [open, setOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<any>(null);
-    const [formData, setFormData] = useState({ roleName: '', description: '', systemRole: false });
+    const [formData, setFormData] = useState({ roleName: '', description: '' });
+
+    const { data: roles, isLoading } = useQuery({
+        queryKey: ['roles'],
+        queryFn: api.roles.list
+    });
+
+    const { data: allPermissions } = useQuery({
+        queryKey: ['permissions'],
+        queryFn: api.permissions.list,
+        enabled: isPermissionsModalOpen
+    });
+
+    const { data: currentRolePermissions } = useQuery({
+        queryKey: ['role-permissions', editingRole?.roleId],
+        queryFn: () => api.roles.getPermissions(editingRole?.roleId),
+        enabled: !!editingRole && isPermissionsModalOpen
+    });
 
     const createMutation = useMutation({
         mutationFn: (data: any) => api.roles.create(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['roles'] });
-            handleClose();
+            closeModal();
         }
     });
 
     const updateMutation = useMutation({
-        mutationFn: (data: any) => api.roles.update(editingRole.roleId, data),
+        mutationFn: (data: any) => api.roles.update(data.roleId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['roles'] });
-            handleClose();
+            closeModal();
         }
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id: string) => api.roles.delete(id),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['roles'] })
+        mutationFn: (roleId: string) => api.roles.delete(roleId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
+        }
     });
 
-    const handleOpen = (role: any = null) => {
+    const assignPermissionMutation = useMutation({
+        mutationFn: ({ roleId, permissionId }: { roleId: string, permissionId: string }) => api.assignments.assignPermission(roleId, permissionId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['role-permissions', editingRole?.roleId] });
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
+        }
+    });
+
+    const revokePermissionMutation = useMutation({
+        mutationFn: ({ roleId, permissionId }: { roleId: string, permissionId: string }) => api.assignments.revokePermission(roleId, permissionId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['role-permissions', editingRole?.roleId] });
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
+        }
+    });
+
+    const openModal = (role?: any) => {
         if (role) {
             setEditingRole(role);
-            setFormData({ roleName: role.roleName, description: role.description, systemRole: role.systemRole });
+            setFormData({ roleName: role.roleName, description: role.description || '' });
         } else {
             setEditingRole(null);
-            setFormData({ roleName: '', description: '', systemRole: false });
+            setFormData({ roleName: '', description: '' });
         }
-        setOpen(true);
+        setIsModalOpen(true);
     };
 
-    const handleClose = () => {
-        setOpen(false);
+    const openPermissionsModal = (role: any) => {
+        setEditingRole(role);
+        setIsPermissionsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setIsPermissionsModalOpen(false);
         setEditingRole(null);
-        setFormData({ roleName: '', description: '', systemRole: false });
+        setFormData({ roleName: '', description: '' });
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
         if (editingRole) {
-            updateMutation.mutate(formData);
+            updateMutation.mutate({ ...formData, roleId: editingRole.roleId });
         } else {
             createMutation.mutate(formData);
         }
     };
 
-    const columns: GridColDef[] = [
-        { field: 'roleName', headerName: 'Role Name', width: 200 },
-        { field: 'description', headerName: 'Description', width: 350 },
-        { field: 'systemRole', headerName: 'System Role', type: 'boolean', width: 120 },
-        {
-            field: 'action',
-            headerName: 'Actions',
-            width: 250,
-            renderCell: (params) => (
-                <Box>
-                    <Button size="small" onClick={() => navigate(`/roles/${params.row.roleId}`)}>Manage Access</Button>
-                    <IconButton size="small" onClick={() => handleOpen(params.row)} color="primary"><Edit /></IconButton>
-                    <IconButton size="small" onClick={() => deleteMutation.mutate(params.row.roleId)} color="error" disabled={params.row.systemRole}><Delete /></IconButton>
-                </Box>
-            ),
-        },
-    ];
+    const togglePermission = (permissionId: string, isAssigned: boolean) => {
+        if (isAssigned) {
+            revokePermissionMutation.mutate({ roleId: editingRole.roleId, permissionId });
+        } else {
+            assignPermissionMutation.mutate({ roleId: editingRole.roleId, permissionId });
+        }
+    };
 
     return (
-        <Box sx={{ height: 600, width: '100%' }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h4">Roles</Typography>
-                <Button variant="contained" startIcon={<Add />} onClick={() => handleOpen()}>Add Role</Button>
-            </Box>
-            <DataGrid
-                rows={roles || []}
-                columns={columns}
-                getRowId={(r) => r.roleId}
-                loading={isLoading}
-            />
+        <div className="space-y-6 animate-in fade-in duration-500">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Roles</h1>
+                    <p className="text-gray-500 text-sm mt-1 font-medium">Define and assign permission sets</p>
+                </div>
+                <Button className="gap-2" onClick={() => openModal()}>
+                    <Plus size={18} /> Create Role
+                </Button>
+            </div>
 
-            <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>{editingRole ? 'Edit Role' : 'Add New Role'}</DialogTitle>
-                <DialogContent sx={{ pt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <TextField
-                        fullWidth
-                        label="Role Name"
-                        value={formData.roleName}
-                        onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
-                        margin="dense"
-                    />
-                    <TextField
-                        fullWidth
-                        label="Description"
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                        margin="dense"
-                        multiline
-                        rows={3}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSubmit} variant="contained" color="primary">
-                        {editingRole ? 'Update' : 'Create'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-        </Box>
+            {isLoading ? (
+                <div className="py-24 flex justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {roles?.map((role: any) => (
+                        <Card key={role.roleId} className="hover:border-primary-200 transition-colors group relative flex flex-col">
+                            <CardHeader className="flex-row items-start justify-between pb-2">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <ShieldCheck size={18} className="text-primary-500" />
+                                        <CardTitle className="text-lg">{role.roleName}</CardTitle>
+                                    </div>
+                                    <Badge variant={role.roleName.includes('Admin') ? 'default' : 'secondary'} className="rounded-lg text-[10px] h-5 px-3 font-black tracking-widest uppercase">
+                                        {role.roleName.includes('Admin') ? 'System Authority' : 'Custom Definition'}
+                                    </Badge>
+                                </div>
+
+                                <Menu as="div" className="relative">
+                                    <Menu.Button className="p-2 bg-gray-50 rounded-xl text-gray-400 group-hover:text-primary-500 transition-colors outline-none cursor-pointer">
+                                        <Settings2 size={18} />
+                                    </Menu.Button>
+                                    <Transition
+                                        as={Fragment}
+                                        enter="transition ease-out duration-100"
+                                        enterFrom="transform opacity-0 scale-95"
+                                        enterTo="transform opacity-100 scale-100"
+                                        leave="transition ease-in duration-75"
+                                        leaveFrom="transform opacity-100 scale-100"
+                                        leaveTo="transform opacity-0 scale-95"
+                                    >
+                                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-1.5 z-10 outline-none">
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() => openModal(role)}
+                                                        className={cn(
+                                                            "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
+                                                            active ? "bg-primary-50 text-primary-600" : "text-gray-600"
+                                                        )}
+                                                    >
+                                                        <Edit size={16} /> Edit Profile
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                            <Menu.Item>
+                                                {({ active }) => (
+                                                    <button
+                                                        onClick={() => { if (confirm('Are you sure you want to delete this role authority?')) deleteMutation.mutate(role.roleId) }}
+                                                        className={cn(
+                                                            "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-rose-500",
+                                                            active ? "bg-rose-50" : ""
+                                                        )}
+                                                    >
+                                                        <Trash2 size={16} /> Remove Authority
+                                                    </button>
+                                                )}
+                                            </Menu.Item>
+                                        </Menu.Items>
+                                    </Transition>
+                                </Menu>
+                            </CardHeader>
+                            <CardContent className="flex-1 flex flex-col">
+                                <p className="text-sm text-gray-500 mb-6 min-h-[48px] leading-relaxed font-medium">
+                                    {role.description || <span className="text-gray-300 italic">This authority set has no official documentation.</span>}
+                                </p>
+                                <div className="mt-auto space-y-4">
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {role.permissions?.length > 0 ? (
+                                            role.permissions.slice(0, 3).map((p: any) => (
+                                                <span key={p.permissionId} className="px-2 py-0.5 bg-primary-50 text-primary-600 rounded text-[9px] font-black uppercase tracking-widest border border-primary-100">
+                                                    {p.permissionName}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <span className="text-[10px] text-gray-300 italic">No policies attached.</span>
+                                        )}
+                                        {(role.permissions?.length > 3) && (
+                                            <span className="text-[10px] text-gray-400 font-bold ml-1">+{role.permissions.length - 3} more</span>
+                                        )}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => openPermissionsModal(role)}
+                                        className="w-full gap-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary-600 h-11 shadow-sm"
+                                    >
+                                        Policies & Permissions <ExternalLink size={14} />
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))}
+                    {(!roles || roles.length === 0) && (
+                        <div className="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-gray-200">
+                            <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-50 rounded-2xl text-gray-300 mb-4">
+                                <ShieldCheck size={24} />
+                            </div>
+                            <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No Authority Sets Defined</p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Role Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={closeModal}
+                title={editingRole ? "Reconfigure Authority" : "Define New Authority Set"}
+                description={editingRole ? "Modify the metadata for this existing system role." : "Initialize a new collection of system permissions."}
+            >
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Authority Name</label>
+                        <div className="relative group">
+                            <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors" size={18} />
+                            <input
+                                required
+                                type="text"
+                                value={formData.roleName}
+                                onChange={e => setFormData({ ...formData, roleName: e.target.value })}
+                                placeholder="e.g. INFRASTRUCTURE_MANAGER"
+                                className="w-full bg-gray-50 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-primary-500/20 transition-all outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Functional Description</label>
+                        <div className="relative group">
+                            <Info className="absolute left-4 top-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" size={18} />
+                            <textarea
+                                rows={4}
+                                value={formData.description}
+                                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                placeholder="Briefly explain the scope of this authority set..."
+                                className="w-full bg-gray-50 border-none rounded-3xl py-3.5 pl-12 pr-4 text-sm font-bold text-gray-900 focus:ring-2 focus:ring-primary-500/20 transition-all outline-none resize-none"
+                            />
+                        </div>
+                        <p className="text-[9px] text-gray-400 font-bold px-1">This helps administrators understand the role's purpose.</p>
+                    </div>
+
+                    <div className="pt-2 flex gap-3">
+                        <Button type="button" variant="outline" className="flex-1 rounded-2xl" onClick={closeModal}>Discard</Button>
+                        <Button
+                            type="submit"
+                            className="flex-1 rounded-2xl font-black uppercase tracking-widest text-xs"
+                            disabled={createMutation.isPending || updateMutation.isPending}
+                        >
+                            {editingRole ? "Apply Changes" : "Commit Role"}
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
+
+            {/* Permissions Management Modal */}
+            <Modal
+                isOpen={isPermissionsModalOpen}
+                onClose={closeModal}
+                title="Policy Enforcement"
+                description={`Attach or detach specific resource policies for the '${editingRole?.roleName}' authority.`}
+                className="max-w-2xl"
+            >
+                <div className="space-y-4">
+                    {/* Summary Stats */}
+                    <div className="grid grid-cols-2 gap-4 mb-2">
+                        <div className="bg-primary-50 p-4 rounded-2xl">
+                            <p className="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em] mb-1">Active Policies</p>
+                            <p className="text-2xl font-black text-primary-600 leading-none">{currentRolePermissions?.length || 0}</p>
+                        </div>
+                        <div className="bg-gray-50 p-4 rounded-2xl">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Available Scope</p>
+                            <p className="text-2xl font-black text-gray-600 leading-none">{allPermissions?.length || 0}</p>
+                        </div>
+                    </div>
+
+                    <div className="max-h-[400px] overflow-y-auto custom-scrollbar space-y-1.5 pr-2">
+                        {allPermissions?.map((perm: any) => {
+                            const isAssigned = (currentRolePermissions || []).some((p: any) => p.permissionId === perm.permissionId);
+                            return (
+                                <button
+                                    key={perm.permissionId}
+                                    onClick={() => togglePermission(perm.permissionId, isAssigned)}
+                                    className={cn(
+                                        "w-full flex items-center justify-between p-3.5 rounded-2xl transition-all duration-200 group border text-left",
+                                        isAssigned
+                                            ? "bg-primary-50 border-primary-100 shadow-sm"
+                                            : "bg-white border-transparent hover:bg-gray-50"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className={cn(
+                                            "p-2.5 rounded-xl transition-all shadow-sm",
+                                            isAssigned ? "bg-primary-500 text-white" : "bg-gray-100 text-gray-400 group-hover:text-gray-600"
+                                        )}>
+                                            <FileKey size={18} />
+                                        </div>
+                                        <div>
+                                            <p className={cn("text-[11px] font-black uppercase tracking-widest", isAssigned ? "text-primary-600" : "text-gray-900")}>
+                                                {perm.permissionName}
+                                            </p>
+                                            <code className="text-[9px] text-gray-400 font-bold opacity-80 uppercase tracking-tighter">{perm.permissionKey}</code>
+                                        </div>
+                                    </div>
+                                    <div className={cn(
+                                        "w-6 h-6 rounded-xl border-2 flex items-center justify-center transition-all",
+                                        isAssigned ? "bg-primary-500 border-primary-500 scale-100" : "border-gray-200 group-hover:border-gray-300 scale-95"
+                                    )}>
+                                        {isAssigned && <CheckSquare size={14} className="text-white" strokeWidth={3} />}
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="pt-4 flex gap-3">
+                        <Button variant="default" className="w-full rounded-2xl h-12 font-black uppercase tracking-widest text-xs" onClick={closeModal}>Synchronize Changes</Button>
+                    </div>
+                </div>
+            </Modal>
+        </div>
     );
 }
