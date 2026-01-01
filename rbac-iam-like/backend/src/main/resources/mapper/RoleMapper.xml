@@ -5,6 +5,11 @@
     <!-- Find All Roles -->
     <select id="findAll" resultType="com.aitech.rbac.model.Role">
         SELECT * FROM roles
+        <where>
+            <if test="search != null and search != ''">
+                (LOWER(role_name) LIKE LOWER(CONCAT('%', #{search}, '%')))
+            </if>
+        </where>
     </select>
 
     <!-- Find Role by ID -->

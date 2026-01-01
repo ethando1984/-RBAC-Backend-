@@ -9,15 +9,38 @@ import java.util.*;
 @RequestMapping("/api/roles")
 public class RoleController {
     private final RoleService service;
-    public RoleController(RoleService service) { this.service = service; }
 
-    @GetMapping public List<Role> getAll() { return service.getAll(); }
-    @GetMapping("/{id}") public Role getById(@PathVariable UUID id) { return service.getById(id); }
-    @PostMapping public void create(@RequestBody Role entity) { service.create(entity); }
+    public RoleController(RoleService service) {
+        this.service = service;
+    }
+
+    @GetMapping
+    public Object getAll(@RequestParam(required = false) Integer page, @RequestParam(required = false) Integer size,
+            @RequestParam(required = false) String search) {
+        if (page == null && size == null) {
+            return service.getAll();
+        }
+        return service.getAll(page != null ? page : 1, size != null ? size : 10, search);
+    }
+
+    @GetMapping("/{id}")
+    public Role getById(@PathVariable UUID id) {
+        return service.getById(id);
+    }
+
+    @PostMapping
+    public void create(@RequestBody Role entity) {
+        service.create(entity);
+    }
+
     @PutMapping("/{id}")
     public void update(@PathVariable UUID id, @RequestBody Role entity) {
         entity.setRoleId(id);
         service.update(entity);
     }
-    @DeleteMapping("/{id}") public void delete(@PathVariable UUID id) { service.delete(id); }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable UUID id) {
+        service.delete(id);
+    }
 }

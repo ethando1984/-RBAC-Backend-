@@ -8,17 +8,23 @@ import { api } from '../api/client';
 import { useState, Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { cn } from '../lib/utils';
+import { useViewParams } from '../hooks/useViewParams';
+import { PageHeader } from '../components/common/PageHeader';
+import { ViewToolbar } from '../components/common/ViewToolbar';
+import { PaginationFooter } from '../components/common/PaginationFooter';
 
 export default function Roles() {
     const queryClient = useQueryClient();
+    const { page, pageSize, viewMode, search, setPage, setPageSize, setViewMode, setSearch } = useViewParams();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isPermissionsModalOpen, setIsPermissionsModalOpen] = useState(false);
     const [editingRole, setEditingRole] = useState<any>(null);
     const [formData, setFormData] = useState({ roleName: '', description: '' });
 
-    const { data: roles, isLoading } = useQuery({
-        queryKey: ['roles'],
-        queryFn: api.roles.list
+    const { data: rolesData, isLoading } = useQuery({
+        queryKey: ['roles', page, pageSize, search],
+        queryFn: () => api.roles.list(page, pageSize, search)
     });
 
     const { data: allPermissions } = useQuery({
@@ -112,121 +118,232 @@ export default function Roles() {
         }
     };
 
+    const isServerSide = rolesData && !Array.isArray(rolesData) && 'content' in rolesData;
+    const rawRoles = isServerSide ? rolesData.content : (Array.isArray(rolesData) ? rolesData : []);
+    const rawTotal = isServerSide ? rolesData.totalElements : rawRoles.length;
+
+    let paginatedRoles = rawRoles;
+    let totalItems = rawTotal;
+
+    if (!isServerSide) {
+        const filtered = rawRoles.filter((r: any) =>
+            r.roleName.toLowerCase().includes(search.toLowerCase()) ||
+            r.description?.toLowerCase().includes(search.toLowerCase())
+        );
+        totalItems = filtered.length;
+        paginatedRoles = filtered.slice((page - 1) * pageSize, page * pageSize);
+    }
+
+    const RoleActionMenu = ({ role }: { role: any }) => (
+        <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-white transition-all outline-none">
+                <Settings2 size={18} />
+            </Menu.Button>
+            <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+            >
+                <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-1.5 z-10 outline-none">
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => openModal(role)}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
+                                    active ? "bg-primary-50 text-primary-600" : "text-gray-600"
+                                )}
+                            >
+                                <Edit size={16} /> Edit Profile
+                            </button>
+                        )}
+                    </Menu.Item>
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => openPermissionsModal(role)}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
+                                    active ? "bg-primary-50 text-primary-600" : "text-gray-600"
+                                )}
+                            >
+                                <FileKey size={16} /> Manage Policies
+                            </button>
+                        )}
+                    </Menu.Item>
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => { if (confirm('Are you sure you want to delete this role authority?')) deleteMutation.mutate(role.roleId) }}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-rose-500",
+                                    active ? "bg-rose-50" : ""
+                                )}
+                            >
+                                <Trash2 size={16} /> Remove Authority
+                            </button>
+                        )}
+                    </Menu.Item>
+                </Menu.Items>
+            </Transition>
+        </Menu>
+    );
+
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Roles</h1>
-                    <p className="text-gray-500 text-sm mt-1 font-medium">Define and assign permission sets</p>
-                </div>
-                <Button className="gap-2" onClick={() => openModal()}>
-                    <Plus size={18} /> Create Role
-                </Button>
-            </div>
+        <div className="space-y-6">
+            <PageHeader
+                title="Roles"
+                description="Define and assign permission sets"
+                action={
+                    <Button className="gap-2" onClick={() => openModal()}>
+                        <Plus size={18} /> Create Role
+                    </Button>
+                }
+            />
 
-            {isLoading ? (
-                <div className="py-24 flex justify-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {roles?.map((role: any) => (
-                        <Card key={role.roleId} className="hover:border-primary-200 transition-colors group relative flex flex-col">
-                            <CardHeader className="flex-row items-start justify-between pb-2">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <ShieldCheck size={18} className="text-primary-500" />
-                                        <CardTitle className="text-lg">{role.roleName}</CardTitle>
-                                    </div>
-                                    <Badge variant={role.roleName.includes('Admin') ? 'default' : 'secondary'} className="rounded-lg text-[10px] h-5 px-3 font-black tracking-widest uppercase">
-                                        {role.roleName.includes('Admin') ? 'System Authority' : 'Custom Definition'}
-                                    </Badge>
-                                </div>
+            <ViewToolbar
+                search={search}
+                onSearchChange={setSearch}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+                placeholder="Search roles by name or description..."
+            />
 
-                                <Menu as="div" className="relative">
-                                    <Menu.Button className="p-2 bg-gray-50 rounded-xl text-gray-400 group-hover:text-primary-500 transition-colors outline-none cursor-pointer">
-                                        <Settings2 size={18} />
-                                    </Menu.Button>
-                                    <Transition
-                                        as={Fragment}
-                                        enter="transition ease-out duration-100"
-                                        enterFrom="transform opacity-0 scale-95"
-                                        enterTo="transform opacity-100 scale-100"
-                                        leave="transition ease-in duration-75"
-                                        leaveFrom="transform opacity-100 scale-100"
-                                        leaveTo="transform opacity-0 scale-95"
-                                    >
-                                        <Menu.Items className="absolute right-0 mt-2 w-48 origin-top-right bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-1.5 z-10 outline-none">
-                                            <Menu.Item>
-                                                {({ active }) => (
-                                                    <button
-                                                        onClick={() => openModal(role)}
-                                                        className={cn(
-                                                            "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
-                                                            active ? "bg-primary-50 text-primary-600" : "text-gray-600"
-                                                        )}
-                                                    >
-                                                        <Edit size={16} /> Edit Profile
-                                                    </button>
-                                                )}
-                                            </Menu.Item>
-                                            <Menu.Item>
-                                                {({ active }) => (
-                                                    <button
-                                                        onClick={() => { if (confirm('Are you sure you want to delete this role authority?')) deleteMutation.mutate(role.roleId) }}
-                                                        className={cn(
-                                                            "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-rose-500",
-                                                            active ? "bg-rose-50" : ""
-                                                        )}
-                                                    >
-                                                        <Trash2 size={16} /> Remove Authority
-                                                    </button>
-                                                )}
-                                            </Menu.Item>
-                                        </Menu.Items>
-                                    </Transition>
-                                </Menu>
-                            </CardHeader>
-                            <CardContent className="flex-1 flex flex-col">
-                                <p className="text-sm text-gray-500 mb-6 min-h-[48px] leading-relaxed font-medium">
-                                    {role.description || <span className="text-gray-300 italic">This authority set has no official documentation.</span>}
-                                </p>
-                                <div className="mt-auto space-y-4">
-                                    <div className="flex flex-wrap gap-1.5">
-                                        {role.permissions?.length > 0 ? (
-                                            role.permissions.slice(0, 3).map((p: any) => (
-                                                <span key={p.permissionId} className="px-2 py-0.5 bg-primary-50 text-primary-600 rounded text-[9px] font-black uppercase tracking-widest border border-primary-100">
-                                                    {p.permissionName}
-                                                </span>
-                                            ))
-                                        ) : (
-                                            <span className="text-[10px] text-gray-300 italic">No policies attached.</span>
-                                        )}
-                                        {(role.permissions?.length > 3) && (
-                                            <span className="text-[10px] text-gray-400 font-bold ml-1">+{role.permissions.length - 3} more</span>
-                                        )}
-                                    </div>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => openPermissionsModal(role)}
-                                        className="w-full gap-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary-600 h-11 shadow-sm"
-                                    >
-                                        Policies & Permissions <ExternalLink size={14} />
-                                    </Button>
+            <div className="min-h-[400px]">
+                {isLoading ? (
+                    <div className="py-24 flex justify-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+                    </div>
+                ) : (
+                    <>
+                        {viewMode === 'table' ? (
+                            <Card className="overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="border-b border-gray-50 bg-gray-50/30">
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Role Name</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Policies</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hidden md:table-cell">Description</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {paginatedRoles.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="px-6 py-12 text-center text-gray-400 text-sm font-medium">
+                                                        No roles found matching your criteria.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                paginatedRoles.map((role: any) => (
+                                                    <tr key={role.roleId} className="group hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm">
+                                                                    <ShieldCheck size={18} />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-sm font-bold text-gray-900 tracking-tight">{role.roleName}</span>
+                                                                        <Badge variant={role.roleName.includes('Admin') ? 'default' : 'secondary'} className="rounded py-0 px-1.5 text-[8px] uppercase">
+                                                                            {role.roleName.includes('Admin') ? 'Sys' : 'Def'}
+                                                                        </Badge>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {role.permissions?.length > 0 ? (
+                                                                    role.permissions.slice(0, 2).map((p: any) => (
+                                                                        <span key={p.permissionId} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold uppercase tracking-wider border border-gray-200">
+                                                                            {p.permissionName}
+                                                                        </span>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-[10px] text-gray-300 italic font-medium">No policies</span>
+                                                                )}
+                                                                {role.permissions?.length > 2 && (
+                                                                    <span className="px-2 py-0.5 bg-gray-50 text-gray-400 rounded text-[10px] font-bold">+{role.permissions.length - 2}</span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 hidden md:table-cell">
+                                                            <p className="text-xs text-gray-500 font-medium truncate max-w-xs">{role.description || '-'}</p>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <RoleActionMenu role={role} />
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                    {(!roles || roles.length === 0) && (
-                        <div className="col-span-full py-20 text-center bg-white rounded-3xl border border-dashed border-gray-200">
-                            <div className="inline-flex items-center justify-center w-12 h-12 bg-gray-50 rounded-2xl text-gray-300 mb-4">
-                                <ShieldCheck size={24} />
+                            </Card>
+                        ) : (
+                            // Card View (Original Layout Adapted)
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {paginatedRoles.map((role: any) => (
+                                    <Card key={role.roleId} className="hover:border-primary-200 transition-colors group relative flex flex-col hover:shadow-lg duration-300">
+                                        <CardHeader className="flex-row items-start justify-between pb-2">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <ShieldCheck size={18} className="text-primary-500" />
+                                                    <CardTitle className="text-lg">{role.roleName}</CardTitle>
+                                                </div>
+                                                <Badge variant={role.roleName.includes('Admin') ? 'default' : 'secondary'} className="rounded-lg text-[10px] h-5 px-3 font-black tracking-widest uppercase">
+                                                    {role.roleName.includes('Admin') ? 'System Authority' : 'Custom Definition'}
+                                                </Badge>
+                                            </div>
+                                            <RoleActionMenu role={role} />
+                                        </CardHeader>
+                                        <CardContent className="flex-1 flex flex-col">
+                                            <p className="text-sm text-gray-500 mb-6 min-h-[48px] leading-relaxed font-medium">
+                                                {role.description || <span className="text-gray-300 italic">This authority set has no official documentation.</span>}
+                                            </p>
+                                            <div className="mt-auto space-y-4">
+                                                <div className="flex flex-wrap gap-1.5 h-16 overflow-hidden content-start">
+                                                    {role.permissions?.length > 0 ? (
+                                                        role.permissions.map((p: any) => (
+                                                            <span key={p.permissionId} className="px-2 py-0.5 bg-primary-50 text-primary-600 rounded text-[9px] font-black uppercase tracking-widest border border-primary-100">
+                                                                {p.permissionName}
+                                                            </span>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-[10px] text-gray-300 italic">No policies attached.</span>
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    variant="outline"
+                                                    onClick={() => openPermissionsModal(role)}
+                                                    className="w-full gap-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-primary-600 h-11 shadow-sm"
+                                                >
+                                                    Policies & Permissions <ExternalLink size={14} />
+                                                </Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
                             </div>
-                            <p className="text-gray-400 font-bold uppercase tracking-widest text-xs">No Authority Sets Defined</p>
-                        </div>
-                    )}
-                </div>
-            )}
+                        )}
+
+                        <PaginationFooter
+                            currentPage={page}
+                            pageSize={pageSize}
+                            totalItems={totalItems}
+                            onPageChange={setPage}
+                        />
+                    </>
+                )}
+            </div>
 
             {/* Role Modal */}
             <Modal

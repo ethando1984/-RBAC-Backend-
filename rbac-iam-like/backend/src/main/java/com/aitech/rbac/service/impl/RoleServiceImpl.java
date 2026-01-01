@@ -1,5 +1,8 @@
 package com.aitech.rbac.service.impl;
 
+import com.aitech.rbac.dto.PageResponse;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.aitech.rbac.mapper.RoleMapper;
 import com.aitech.rbac.model.Role;
 import com.aitech.rbac.service.RoleService;
@@ -15,7 +18,14 @@ public class RoleServiceImpl implements RoleService {
     }
 
     public List<Role> getAll() {
-        return mapper.findAll();
+        return mapper.findAll(null);
+    }
+
+    public PageResponse<Role> getAll(int page, int size, String search) {
+        PageHelper.startPage(page, size);
+        List<Role> roles = mapper.findAll(search);
+        PageInfo<Role> pageInfo = new PageInfo<>(roles);
+        return new PageResponse<>(roles, pageInfo.getTotal(), page, size);
     }
 
     public Role getById(UUID id) {

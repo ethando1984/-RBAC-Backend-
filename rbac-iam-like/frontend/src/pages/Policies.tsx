@@ -1,4 +1,4 @@
-import { FileKey, Plus, Search, Trash2, Edit, Fingerprint, Type, ShieldCheck, Box, Activity, Settings2, X, Link, AlertTriangle, Lock, CheckCircle2, Copy } from 'lucide-react';
+import { FileKey, Plus, Trash2, Edit, Fingerprint, Type, ShieldCheck, Box, Activity, Settings2, Link, AlertTriangle, Lock, CheckCircle2, Copy } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
@@ -7,12 +7,19 @@ import { api } from '../api/client';
 import { useState, Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { cn } from '../lib/utils';
+import { useViewParams } from '../hooks/useViewParams';
+import { PageHeader } from '../components/common/PageHeader';
+import { ViewToolbar } from '../components/common/ViewToolbar';
+import { PaginationFooter } from '../components/common/PaginationFooter';
 
 export default function Policies() {
     const queryClient = useQueryClient();
-    const [searchTerm, setSearchTerm] = useState('');
+    const { page, pageSize, viewMode, search, setPage, setPageSize, setViewMode, setSearch } = useViewParams();
+
+    // Custom filters
     const [selectedNamespace, setSelectedNamespace] = useState<string>('all');
     const [usageFilter, setUsageFilter] = useState<'all' | 'bound' | 'unbound'>('all');
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
     const [editingPolicy, setEditingPolicy] = useState<any>(null);
@@ -165,8 +172,8 @@ export default function Policies() {
     };
 
     const filteredPolicies = (policies || []).filter((p: any) => {
-        const matchesSearch = (p.permissionName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-            (p.permissionKey?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+        const matchesSearch = (p.permissionName?.toLowerCase() || '').includes(search.toLowerCase()) ||
+            (p.permissionKey?.toLowerCase() || '').includes(search.toLowerCase());
 
         const matchesNamespace = selectedNamespace === 'all' || (p.permissionKey?.toLowerCase() || '').startsWith(selectedNamespace.toLowerCase().split(':')[0]);
         // Note: The above is a heuristic since we don't have many-to-many filter on list yet.
@@ -178,179 +185,259 @@ export default function Policies() {
         return matchesSearch && matchesNamespace && matchesUsage;
     });
 
-    const clearFilters = () => {
-        setSearchTerm('');
-        setSelectedNamespace('all');
-        setUsageFilter('all');
-    };
+    const totalItems = filteredPolicies.length;
+    const paginatedPolicies = filteredPolicies.slice((page - 1) * pageSize, page * pageSize);
+
+    const PolicyActionMenu = ({ policy }: { policy: any }) => (
+        <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-white transition-all outline-none">
+                <Settings2 size={20} />
+            </Menu.Button>
+            <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+            >
+                <Menu.Items className="absolute right-0 mt-2 w-52 origin-top-right bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-1.5 z-10 outline-none">
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => openScopeModal(policy)}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-primary-600",
+                                    active ? "bg-primary-50" : ""
+                                )}
+                            >
+                                <ShieldCheck size={16} /> Edit Resource Scope
+                            </button>
+                        )}
+                    </Menu.Item>
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => openModal(policy)}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
+                                    active ? "bg-gray-50 text-gray-900" : "text-gray-600"
+                                )}
+                            >
+                                <Edit size={16} /> Edit Metadata
+                            </button>
+                        )}
+                    </Menu.Item>
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => { if (confirm('Delete this policy definition permanently?')) deleteMutation.mutate(policy.permissionId) }}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-rose-500",
+                                    active ? "bg-rose-50" : ""
+                                )}
+                            >
+                                <Trash2 size={16} /> Purge Policy
+                            </button>
+                        )}
+                    </Menu.Item>
+                </Menu.Items>
+            </Transition>
+        </Menu>
+    );
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Policies</h1>
-                    <p className="text-gray-500 text-sm mt-1 font-medium">Fine-grained access control definitions</p>
-                </div>
-                <Button className="gap-2" onClick={() => openModal()}>
-                    <Plus size={18} /> Create Policy
-                </Button>
-            </div>
+        <div className="space-y-6">
+            <PageHeader
+                title="Policies"
+                description="Fine-grained access control definitions"
+                action={
+                    <Button className="gap-2" onClick={() => openModal()}>
+                        <Plus size={18} /> Create Policy
+                    </Button>
+                }
+            />
 
-            <Card>
-                <CardHeader className="pb-4 pt-6 space-y-4">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                        <div className="relative w-full max-w-sm">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Filter definitions by name or key..."
-                                value={searchTerm}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full bg-gray-50 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
-                            />
-                        </div>
+            <div className="space-y-4">
+                <ViewToolbar
+                    search={search}
+                    onSearchChange={setSearch}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    pageSize={pageSize}
+                    onPageSizeChange={setPageSize}
+                    placeholder="Filter definitions by name or key..."
+                />
 
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 custom-scrollbar">
-                            <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-xl">
+                {/* Extended Filters */}
+                <Card className="px-4 py-3 bg-gray-50/50 border-gray-100">
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-black text-gray-400 tracking-wider">Usage:</span>
+                            <div className="flex items-center gap-1 bg-white p-1 rounded-lg border border-gray-100">
                                 {(['all', 'bound', 'unbound'] as const).map((type) => (
                                     <button
                                         key={type}
                                         onClick={() => setUsageFilter(type)}
                                         className={cn(
-                                            "px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all",
-                                            usageFilter === type ? "bg-white text-primary-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                                            "px-3 py-1 text-[10px] font-bold uppercase tracking-wide rounded-md transition-all",
+                                            usageFilter === type ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-600"
                                         )}
                                     >
                                         {type}
                                     </button>
                                 ))}
                             </div>
+                        </div>
 
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase font-black text-gray-400 tracking-wider">Domain:</span>
                             <select
                                 value={selectedNamespace}
                                 onChange={e => setSelectedNamespace(e.target.value)}
-                                className="bg-gray-50 border-none rounded-xl px-3 py-2 text-[10px] font-black uppercase tracking-widest text-gray-500 focus:ring-2 focus:ring-primary-500/20 outline-none cursor-pointer min-w-[120px]"
+                                className="bg-white border border-gray-100 rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-wide text-gray-600 focus:ring-2 focus:ring-primary-500/20 outline-none cursor-pointer min-w-[120px]"
                             >
                                 <option value="all">Every Domain</option>
                                 {namespaces?.map((ns: any) => (
                                     <option key={ns.namespaceId} value={ns.namespaceKey}>{ns.namespaceKey}</option>
                                 ))}
                             </select>
-
-                            {(searchTerm || selectedNamespace !== 'all' || usageFilter !== 'all') && (
-                                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-400 hover:text-rose-500 h-9 w-9 p-0 rounded-xl">
-                                    <X size={16} />
-                                </Button>
-                            )}
                         </div>
                     </div>
-                </CardHeader>
-                <CardContent className="px-0">
-                    {isLoading ? (
-                        <div className="py-20 flex justify-center">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-                        </div>
-                    ) : (
-                        <div className="divide-y divide-gray-50">
-                            {filteredPolicies.map((p: any) => (
-                                <div key={p.permissionId} className="flex items-center justify-between px-6 py-5 hover:bg-gray-50/50 transition-colors group">
-                                    <div className="flex items-center gap-5">
-                                        <div className="p-3 rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-all shadow-sm">
-                                            <FileKey size={22} />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-sm font-extrabold text-gray-900 tracking-tight">{p.permissionName}</h3>
-                                            <p className="text-[11px] text-gray-400 font-medium mb-1 line-clamp-1">{p.description || 'No formal description provided.'}</p>
-                                            <div className="flex items-center gap-2 mt-1">
-                                                <code className="text-[10px] text-primary-600 font-black tracking-widest uppercase bg-primary-50 px-2 py-0.5 rounded-md">
-                                                    {p.permissionKey}
-                                                </code>
-                                                {p.resourceAccessCount > 0 && (
-                                                    <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
-                                                        <Activity size={10} strokeWidth={3} /> {p.resourceAccessCount} Scopes
-                                                    </span>
-                                                )}
-                                                {p.attachedRoleCount > 0 ? (
-                                                    <span className="flex items-center gap-1 text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">
-                                                        <Link size={10} strokeWidth={3} /> Bound to {p.attachedRoleCount} {p.attachedRoleCount === 1 ? 'Role' : 'Roles'}
-                                                    </span>
-                                                ) : (
-                                                    <span className="flex items-center gap-1 text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-0.5 rounded-md italic">
-                                                        <Link size={10} strokeWidth={3} /> Unbound
-                                                    </span>
-                                                )}
+                </Card>
+            </div>
+
+            <div className="min-h-[400px]">
+                {isLoading ? (
+                    <div className="py-20 flex justify-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
+                    </div>
+                ) : (
+                    <>
+                        {viewMode === 'table' ? (
+                            <Card className="overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="border-b border-gray-50 bg-gray-50/30">
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Policy Name</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Key</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hidden md:table-cell">Status</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {paginatedPolicies.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="px-6 py-12 text-center text-gray-400 text-sm font-medium">
+                                                        No policies found matching your criteria.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                paginatedPolicies.map((p: any) => (
+                                                    <tr key={p.permissionId} className="group hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="p-2.5 rounded-xl bg-gray-100 text-gray-500 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                                                                    <FileKey size={18} />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-sm font-bold text-gray-900 tracking-tight block">{p.permissionName}</span>
+                                                                    <span className="text-[10px] text-gray-400 font-medium line-clamp-1 max-w-[200px]">{p.description || 'No description'}</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <code className="text-[10px] text-primary-600 font-black tracking-widest uppercase bg-primary-50 px-2 py-1 rounded-lg border border-primary-100">
+                                                                {p.permissionKey}
+                                                            </code>
+                                                        </td>
+                                                        <td className="px-6 py-4 hidden md:table-cell">
+                                                            <div className="flex items-center gap-2">
+                                                                {p.resourceAccessCount > 0 && (
+                                                                    <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                                                                        <Activity size={10} strokeWidth={3} /> {p.resourceAccessCount} Scopes
+                                                                    </span>
+                                                                )}
+                                                                {p.attachedRoleCount > 0 ? (
+                                                                    <span className="flex items-center gap-1 text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-1 rounded-lg border border-indigo-100">
+                                                                        <Link size={10} strokeWidth={3} /> {p.attachedRoleCount} {p.attachedRoleCount === 1 ? 'Role' : 'Roles'}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="flex items-center gap-1 text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-1 rounded-lg italic">
+                                                                        Unbound
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <PolicyActionMenu policy={p} />
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </Card>
+                        ) : (
+                            // Card View (Similar to previous implementation)
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {paginatedPolicies.map((p: any) => (
+                                    <Card key={p.permissionId} className="hover:shadow-xl transition-all duration-300 group">
+                                        <CardContent className="p-6">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="p-3 rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-primary-50 group-hover:text-primary-500 transition-all shadow-sm">
+                                                    <FileKey size={22} />
+                                                </div>
+                                                <PolicyActionMenu policy={p} />
                                             </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <Menu as="div" className="relative">
-                                            <Menu.Button className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-white transition-all outline-none">
-                                                <Settings2 size={20} />
-                                            </Menu.Button>
-                                            <Transition
-                                                as={Fragment}
-                                                enter="transition ease-out duration-100"
-                                                enterFrom="transform opacity-0 scale-95"
-                                                enterTo="transform opacity-100 scale-100"
-                                                leave="transition ease-in duration-75"
-                                                leaveFrom="transform opacity-100 scale-100"
-                                                leaveTo="transform opacity-0 scale-95"
-                                            >
-                                                <Menu.Items className="absolute right-0 mt-2 w-52 origin-top-right bg-white rounded-2xl shadow-2xl shadow-gray-200/50 border border-gray-100 p-1.5 z-10 outline-none">
-                                                    <Menu.Item>
-                                                        {({ active }) => (
-                                                            <button
-                                                                onClick={() => openScopeModal(p)}
-                                                                className={cn(
-                                                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-primary-600",
-                                                                    active ? "bg-primary-50" : ""
-                                                                )}
-                                                            >
-                                                                <ShieldCheck size={16} /> Edit Resource Scope
-                                                            </button>
-                                                        )}
-                                                    </Menu.Item>
-                                                    <Menu.Item>
-                                                        {({ active }) => (
-                                                            <button
-                                                                onClick={() => openModal(p)}
-                                                                className={cn(
-                                                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
-                                                                    active ? "bg-gray-50 text-gray-900" : "text-gray-600"
-                                                                )}
-                                                            >
-                                                                <Edit size={16} /> Edit Metadata
-                                                            </button>
-                                                        )}
-                                                    </Menu.Item>
-                                                    <Menu.Item>
-                                                        {({ active }) => (
-                                                            <button
-                                                                onClick={() => { if (confirm('Delete this policy definition permanently?')) deleteMutation.mutate(p.permissionId) }}
-                                                                className={cn(
-                                                                    "flex items-center w-full px-3 py-2.5 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-rose-500",
-                                                                    active ? "bg-rose-50" : ""
-                                                                )}
-                                                            >
-                                                                <Trash2 size={16} /> Purge Policy
-                                                            </button>
-                                                        )}
-                                                    </Menu.Item>
-                                                </Menu.Items>
-                                            </Transition>
-                                        </Menu>
-                                    </div>
-                                </div>
-                            ))}
-                            {filteredPolicies.length === 0 && (
-                                <div className="py-20 text-center text-gray-400 font-bold uppercase tracking-widest text-xs italic">
-                                    No policy definitions matching criteria
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+
+                                            <div className="mb-4">
+                                                <h3 className="text-sm font-extrabold text-gray-900 tracking-tight mb-1">{p.permissionName}</h3>
+                                                <p className="text-[11px] text-gray-400 font-medium line-clamp-1">{p.description || 'No formal description provided.'}</p>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Key</span>
+                                                    <code className="text-[9px] text-primary-600 font-black tracking-widest uppercase bg-primary-50 px-2 py-0.5 rounded-md">
+                                                        {p.permissionKey}
+                                                    </code>
+                                                </div>
+                                                <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
+                                                    {p.resourceAccessCount > 0 && (
+                                                        <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
+                                                            <Activity size={10} strokeWidth={3} /> {p.resourceAccessCount} Scopes
+                                                        </span>
+                                                    )}
+                                                    {p.attachedRoleCount > 0 ? (
+                                                        <span className="flex items-center gap-1 text-[10px] text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded-md">
+                                                            <Link size={10} strokeWidth={3} /> {p.attachedRoleCount} Roles
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-1 text-[10px] text-gray-400 font-bold bg-gray-50 px-2 py-0.5 rounded-md italic">
+                                                            Unbound
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+
+                        <PaginationFooter
+                            currentPage={page}
+                            pageSize={pageSize}
+                            totalItems={totalItems}
+                            onPageChange={setPage}
+                        />
+                    </>
+                )}
+            </div>
 
             {/* Policy Modal */}
             <Modal

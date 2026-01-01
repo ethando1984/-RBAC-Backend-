@@ -25,7 +25,7 @@ export const authApi = {
 
 export const api = {
     users: {
-        list: () => client.get('/users').then(r => r.data),
+        list: (page?: number, size?: number, search?: string) => client.get('/users', { params: { page, size, search } }).then(r => r.data),
         get: (id: string) => client.get(`/users/${id}`).then(r => r.data),
         getAccess: (id: string) => client.get(`/access/${id}`).then(r => r.data),
         create: (data: any) => client.post('/users', data),
@@ -33,7 +33,7 @@ export const api = {
         delete: (id: string) => client.delete(`/users/${id}`),
     },
     roles: {
-        list: () => client.get('/roles').then(r => r.data),
+        list: (page?: number, size?: number, search?: string) => client.get('/roles', { params: { page, size, search } }).then(r => r.data),
         get: (id: string) => client.get(`/roles/${id}`).then(r => r.data),
         getPermissions: (id: string) => client.get(`/role_permissions/${id}`).then(r => r.data),
         create: (data: any) => client.post('/roles', data),

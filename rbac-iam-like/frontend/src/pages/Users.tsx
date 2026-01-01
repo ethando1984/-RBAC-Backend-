@@ -1,6 +1,7 @@
-import { Plus, Search, MoreHorizontal, Edit, Trash2, ShieldCheck, Mail, User as UserIcon, ToggleLeft, ToggleRight, Key } from 'lucide-react';
+import { Plus, MoreHorizontal, Edit, Trash2, Mail, User as UserIcon, ToggleLeft, ToggleRight, Key, Shield, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
-import { Card, CardHeader, CardContent } from '../components/ui/Card';
+import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { Modal } from '../components/ui/Modal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -8,23 +9,28 @@ import { api } from '../api/client';
 import { useState, Fragment } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { cn } from '../lib/utils';
+import { useViewParams } from '../hooks/useViewParams';
+import { PageHeader } from '../components/common/PageHeader';
+import { ViewToolbar } from '../components/common/ViewToolbar';
+import { PaginationFooter } from '../components/common/PaginationFooter';
 
 export default function Users() {
     const queryClient = useQueryClient();
-    const [searchTerm, setSearchTerm] = useState('');
+    const { page, pageSize, viewMode, search, setPage, setPageSize, setViewMode, setSearch } = useViewParams();
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isRolesModalOpen, setIsRolesModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<any>(null);
     const [formData, setFormData] = useState({ username: '', email: '', password: '', active: true });
 
-    const { data: users, isLoading } = useQuery({
-        queryKey: ['users'],
-        queryFn: api.users.list
+    const { data: usersData, isLoading } = useQuery({
+        queryKey: ['users', page, pageSize, search],
+        queryFn: () => api.users.list(page, pageSize, search)
     });
 
     const { data: allRoles } = useQuery({
         queryKey: ['roles'],
-        queryFn: api.roles.list,
+        queryFn: () => api.roles.list(),
         enabled: isRolesModalOpen
     });
 
@@ -123,152 +129,253 @@ export default function Users() {
         }
     };
 
-    const filteredUsers = (users || []).filter((u: any) =>
-        u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    // Filter and Pagination Logic
+    // Detect if we are in server-side mode (response has content property) or client-side (response is array)
+    const isServerSide = usersData && !Array.isArray(usersData) && 'content' in usersData;
+
+    const rawUsers = isServerSide ? usersData.content : (Array.isArray(usersData) ? usersData : []);
+    const rawTotal = isServerSide ? usersData.totalElements : rawUsers.length;
+
+    let paginatedUsers = rawUsers;
+    let totalItems = rawTotal;
+
+    if (!isServerSide) {
+        // Client-side filtering and pagination fallback
+        const filtered = rawUsers.filter((u: any) =>
+            u.username.toLowerCase().includes(search.toLowerCase()) ||
+            u.email?.toLowerCase().includes(search.toLowerCase())
+        );
+        totalItems = filtered.length;
+        paginatedUsers = filtered.slice((page - 1) * pageSize, page * pageSize);
+    }
+
+    const UserActionMenu = ({ user }: { user: any }) => (
+        <Menu as="div" className="relative inline-block text-left">
+            <Menu.Button className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-white transition-all outline-none">
+                <MoreHorizontal size={20} />
+            </Menu.Button>
+            <Transition
+                as={Fragment}
+                enter="transition ease-out duration-100"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+            >
+                <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-1.5 z-10 outline-none">
+                    <Menu.Item>
+                        {({ active }) => (
+                            <Link
+                                to={`/users/${user.userId}`}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
+                                    active ? "bg-gray-50 text-gray-900" : "text-gray-600"
+                                )}
+                            >
+                                <Eye size={16} /> View Details
+                            </Link>
+                        )}
+                    </Menu.Item>
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => openRolesModal(user)}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
+                                    active ? "bg-primary-50 text-primary-600" : "text-gray-600"
+                                )}
+                            >
+                                <Key size={16} /> Manage Roles
+                            </button>
+                        )}
+                    </Menu.Item>
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => openModal(user)}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
+                                    active ? "bg-gray-50 text-gray-900" : "text-gray-600"
+                                )}
+                            >
+                                <Edit size={16} /> Edit User
+                            </button>
+                        )}
+                    </Menu.Item>
+                    <Menu.Item>
+                        {({ active }) => (
+                            <button
+                                onClick={() => { if (confirm('Permanently delete this user identity?')) deleteMutation.mutate(user.userId) }}
+                                className={cn(
+                                    "flex items-center w-full px-3 py-2 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-rose-500",
+                                    active ? "bg-rose-50" : ""
+                                )}
+                            >
+                                <Trash2 size={16} /> Delete Identity
+                            </button>
+                        )}
+                    </Menu.Item>
+                </Menu.Items>
+            </Transition>
+        </Menu>
     );
 
     return (
-        <div className="space-y-6 animate-in fade-in duration-500">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Users</h1>
-                    <p className="text-gray-500 text-sm mt-1 font-medium">Manage system access and authentication</p>
-                </div>
-                <Button className="gap-2" onClick={() => openModal()}>
-                    <Plus size={18} /> Create User
-                </Button>
+        <div className="space-y-6">
+            <PageHeader
+                title="Users"
+                description="Manage system access and authentication"
+                action={
+                    <Button className="gap-2" onClick={() => openModal()}>
+                        <Plus size={18} /> Create User
+                    </Button>
+                }
+            />
+
+            <ViewToolbar
+                search={search}
+                onSearchChange={setSearch}
+                viewMode={viewMode}
+                onViewModeChange={setViewMode}
+                pageSize={pageSize}
+                onPageSizeChange={setPageSize}
+                placeholder="Search users by name or email..."
+            />
+
+            <div className="min-h-[400px]">
+                {isLoading ? (
+                    <div className="py-20 flex justify-center">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
+                    </div>
+                ) : (
+                    <>
+                        {viewMode === 'table' ? (
+                            <Card className="overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead>
+                                            <tr className="border-b border-gray-50 bg-gray-50/30">
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">User</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hidden md:table-cell">Roles</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
+                                                <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {paginatedUsers.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={4} className="px-6 py-12 text-center text-gray-400 text-sm font-medium">
+                                                        No users found matching your criteria.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                paginatedUsers.map((user: any) => (
+                                                    <tr key={user.userId} className="group hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary-100 to-indigo-50 text-primary-600 flex items-center justify-center font-black text-sm uppercase shadow-sm">
+                                                                    {user.username.charAt(0)}
+                                                                </div>
+                                                                <div>
+                                                                    <Link to={`/users/${user.userId}`} className="text-sm font-bold text-gray-900 tracking-tight block hover:text-primary-600 hover:underline underline-offset-2 transition-all">{user.username}</Link>
+                                                                    <span className="text-[10px] text-gray-400 font-medium">{user.email || 'No email'}</span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 hidden md:table-cell">
+                                                            <div className="flex flex-wrap gap-1.5">
+                                                                {user.roles?.length > 0 ? (
+                                                                    user.roles.slice(0, 3).map((r: any) => (
+                                                                        <span key={r.roleId} className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-gray-200">
+                                                                            {r.roleName}
+                                                                        </span>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-[10px] text-gray-300 italic font-medium">No roles assigned</span>
+                                                                )}
+                                                                {user.roles?.length > 3 && (
+                                                                    <span className="px-2 py-1 bg-gray-50 text-gray-400 rounded-lg text-[10px] font-bold">+{user.roles.length - 3}</span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <Badge variant={user.active ? 'success' : 'secondary'} className="rounded-lg h-7 px-2.5 shadow-sm">
+                                                                {user.active ? 'ACTIVE' : 'INACTIVE'}
+                                                            </Badge>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <UserActionMenu user={user} />
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </Card>
+                        ) : (
+                            // Card View
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                {paginatedUsers.map((user: any) => (
+                                    <Card key={user.userId} className="hover:shadow-xl transition-all duration-300 group">
+                                        <CardContent className="p-6">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="w-12 h-12 rounded-3xl bg-gradient-to-br from-primary-100 to-indigo-50 text-primary-600 flex items-center justify-center font-black text-lg uppercase shadow-inner">
+                                                    {user.username.charAt(0)}
+                                                </div>
+                                                <UserActionMenu user={user} />
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <Link to={`/users/${user.userId}`}>
+                                                    <h3 className="text-lg font-bold text-gray-900 tracking-tight mb-1 group-hover:text-primary-600 transition-colors hover:underline underline-offset-2">{user.username}</h3>
+                                                </Link>
+                                                <div className="flex items-center gap-2 text-gray-400 text-xs font-medium">
+                                                    <Mail size={12} />
+                                                    <span className="truncate">{user.email || 'No email'}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <div className="flex items-center justify-between text-xs pb-3 border-b border-gray-50">
+                                                    <span className="font-bold text-gray-400 uppercase tracking-wider">Status</span>
+                                                    <Badge variant={user.active ? 'success' : 'secondary'} className="rounded-md h-5 text-[10px] px-2">
+                                                        {user.active ? 'ACTIVE' : 'INACTIVE'}
+                                                    </Badge>
+                                                </div>
+                                                <div>
+                                                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Roles</div>
+                                                    <div className="flex flex-wrap gap-1.5 h-12 overflow-hidden content-start">
+                                                        {user.roles?.length > 0 ? (
+                                                            user.roles.map((r: any) => (
+                                                                <span key={r.roleId} className="px-2 py-0.5 bg-gray-50 text-gray-600 rounded text-[10px] font-bold uppercase tracking-wider border border-gray-100">
+                                                                    {r.roleName}
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-[10px] text-gray-300 italic">No roles assigned</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+
+                        <PaginationFooter
+                            currentPage={page}
+                            pageSize={pageSize}
+                            totalItems={totalItems}
+                            onPageChange={setPage}
+                        />
+                    </>
+                )}
             </div>
 
-            <Card>
-                <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-                    <div className="relative w-full max-w-sm">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Search users by name or email..."
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                            className="w-full bg-gray-50 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
-                        />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {isLoading ? (
-                        <div className="py-20 flex justify-center">
-                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead>
-                                    <tr className="border-b border-gray-50">
-                                        <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">User</th>
-                                        <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] hidden md:table-cell">Roles</th>
-                                        <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
-                                        <th className="px-4 py-3 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {filteredUsers.map((user: any) => (
-                                        <tr key={user.userId} className="group hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-4 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-primary-100/50 text-primary-600 flex items-center justify-center font-bold text-sm uppercase shadow-sm">
-                                                        {user.username.charAt(0)}
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-sm font-bold text-gray-900 tracking-tight block">{user.username}</span>
-                                                        <span className="text-[10px] text-gray-400 font-medium">{user.email || 'No email'}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4 hidden md:table-cell">
-                                                <div className="flex flex-wrap gap-1">
-                                                    {user.roles?.length > 0 ? (
-                                                        user.roles.map((r: any) => (
-                                                            <span key={r.roleId} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold uppercase tracking-wider">
-                                                                {r.roleName}
-                                                            </span>
-                                                        ))
-                                                    ) : (
-                                                        <span className="text-[10px] text-gray-300 italic">No roles assigned</span>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-4 py-4">
-                                                <Badge variant={user.active ? 'success' : 'secondary'} className="rounded-lg h-7 px-2.5">
-                                                    {user.active ? 'ACTIVE' : 'INACTIVE'}
-                                                </Badge>
-                                            </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <Menu as="div" className="relative inline-block text-left">
-                                                    <Menu.Button className="p-2 text-gray-400 hover:text-gray-900 rounded-xl hover:bg-white transition-all outline-none">
-                                                        <MoreHorizontal size={20} />
-                                                    </Menu.Button>
-                                                    <Transition
-                                                        as={Fragment}
-                                                        enter="transition ease-out duration-100"
-                                                        enterFrom="transform opacity-0 scale-95"
-                                                        enterTo="transform opacity-100 scale-100"
-                                                        leave="transition ease-in duration-75"
-                                                        leaveFrom="transform opacity-100 scale-100"
-                                                        leaveTo="transform opacity-0 scale-95"
-                                                    >
-                                                        <Menu.Items className="absolute right-0 mt-2 w-44 origin-top-right bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 p-1.5 z-10 outline-none">
-                                                            <Menu.Item>
-                                                                {({ active }) => (
-                                                                    <button
-                                                                        onClick={() => openRolesModal(user)}
-                                                                        className={cn(
-                                                                            "flex items-center w-full px-3 py-2 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
-                                                                            active ? "bg-primary-50 text-primary-600" : "text-gray-600"
-                                                                        )}
-                                                                    >
-                                                                        <Key size={16} /> Manage Roles
-                                                                    </button>
-                                                                )}
-                                                            </Menu.Item>
-                                                            <Menu.Item>
-                                                                {({ active }) => (
-                                                                    <button
-                                                                        onClick={() => openModal(user)}
-                                                                        className={cn(
-                                                                            "flex items-center w-full px-3 py-2 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider",
-                                                                            active ? "bg-gray-50 text-gray-900" : "text-gray-600"
-                                                                        )}
-                                                                    >
-                                                                        <Edit size={16} /> Edit User
-                                                                    </button>
-                                                                )}
-                                                            </Menu.Item>
-                                                            <Menu.Item>
-                                                                {({ active }) => (
-                                                                    <button
-                                                                        onClick={() => { if (confirm('Permanently delete this user identity?')) deleteMutation.mutate(user.userId) }}
-                                                                        className={cn(
-                                                                            "flex items-center w-full px-3 py-2 text-xs font-bold rounded-xl transition-all gap-3 uppercase tracking-wider text-rose-500",
-                                                                            active ? "bg-rose-50" : ""
-                                                                        )}
-                                                                    >
-                                                                        <Trash2 size={16} /> Delete Identity
-                                                                    </button>
-                                                                )}
-                                                            </Menu.Item>
-                                                        </Menu.Items>
-                                                    </Transition>
-                                                </Menu>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
-
-            {/* User Modal */}
+            {/* Modal Components remain largely the same, just keeping the structure */}
             <Modal
                 isOpen={isModalOpen}
                 onClose={closeModal}
@@ -310,7 +417,7 @@ export default function Users() {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Access Password</label>
                             <div className="relative group">
-                                <ShieldCheck className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors" size={18} />
+                                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-primary-500 transition-colors" size={18} />
                                 <input
                                     required
                                     type="password"

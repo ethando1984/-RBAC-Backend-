@@ -4,12 +4,14 @@ import { PageShell } from './components/layout/PageShell';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Dashboard from './pages/Dashboard';
 import Users from './pages/Users';
+import UserDetail from './pages/UserDetail';
 import Roles from './pages/Roles';
 import Policies from './pages/Policies';
 import Orders from './pages/Orders';
 import Inventory from './pages/Inventory';
 import Login from './pages/Login';
 import PermissionMatrix from './pages/PermissionMatrix';
+import Settings from './pages/Settings';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +60,7 @@ export default function App() {
 
               <Route element={<ProtectedRoute permission={{ namespace: 'users', action: 'READ' }} />}>
                 <Route path="/users" element={<Users />} />
+                <Route path="/users/:id" element={<UserDetail />} />
               </Route>
 
               <Route element={<ProtectedRoute permission={{ namespace: 'roles', action: 'READ' }} />}>
@@ -76,6 +79,9 @@ export default function App() {
               <Route element={<ProtectedRoute permission={{ namespace: 'inventory', action: 'READ' }} />}>
                 <Route path="/inventory" element={<Inventory />} />
               </Route>
+
+              {/* Settings - accessible to all authenticated users */}
+              <Route path="/settings" element={<Settings />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

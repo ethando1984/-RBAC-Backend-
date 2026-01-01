@@ -1,5 +1,8 @@
 package com.aitech.rbac.service.impl;
 
+import com.aitech.rbac.dto.PageResponse;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.aitech.rbac.mapper.UserMapper;
 import com.aitech.rbac.model.User;
 import com.aitech.rbac.service.UserService;
@@ -15,7 +18,14 @@ public class UserServiceImpl implements UserService {
     }
 
     public List<User> getAll() {
-        return mapper.findAll();
+        return mapper.findAll(null);
+    }
+
+    public PageResponse<User> getAll(int page, int size, String search) {
+        PageHelper.startPage(page, size);
+        List<User> users = mapper.findAll(search);
+        PageInfo<User> pageInfo = new PageInfo<>(users);
+        return new PageResponse<>(users, pageInfo.getTotal(), page, size);
     }
 
     public User getById(UUID id) {

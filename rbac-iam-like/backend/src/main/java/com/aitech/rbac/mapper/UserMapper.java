@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Mapper
 public interface UserMapper {
-        List<User> findAll();
+        List<User> findAll(@Param("search") String search);
 
         User findById(UUID id);
 

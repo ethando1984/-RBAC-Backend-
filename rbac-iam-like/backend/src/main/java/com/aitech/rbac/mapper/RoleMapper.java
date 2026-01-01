@@ -8,7 +8,7 @@ import java.util.UUID;
 
 @Mapper
 public interface RoleMapper {
-    List<Role> findAll();
+    List<Role> findAll(@Param("search") String search);
 
     Role findById(UUID id);
 
