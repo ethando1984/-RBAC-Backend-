@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.PolicyVersionMapper">
+
+    <resultMap id="PolicyVersionResultMap" type="com.aitech.rbac.model.PolicyVersion">
+        <id property="versionId" column="version_id"/>
+        <result property="permissionId" column="permission_id"/>
+        <result property="versionNumber" column="version_number"/>
+        <result property="isDefault" column="is_default"/>
+        <result property="documentJson" column="document_json"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="createdBy" column="created_by"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.aitech.rbac.model.PolicyVersion">
+        INSERT INTO policy_versions (version_id, permission_id, version_number, is_default, document_json, created_at, created_by)
+        VALUES (#{versionId}, #{permissionId}, #{versionNumber}, #{isDefault}, #{documentJson}, #{createdAt}, #{createdBy})
+    </insert>
+
+    <select id="findByPermissionId" resultMap="PolicyVersionResultMap">
+        SELECT * FROM policy_versions WHERE permission_id = #{permissionId} ORDER BY version_number DESC
+    </select>
+
+    <select id="findById" resultMap="PolicyVersionResultMap">
+        SELECT * FROM policy_versions WHERE version_id = #{versionId}
+    </select>
+
+    <select id="findDefaultByPermissionId" resultMap="PolicyVersionResultMap">
+        SELECT * FROM policy_versions WHERE permission_id = #{permissionId} AND is_default = TRUE LIMIT 1
+    </select>
+
+    <update id="clearDefaults">
+        UPDATE policy_versions SET is_default = FALSE WHERE permission_id = #{permissionId}
+    </update>
+
+    <update id="setAsDefault">
+        UPDATE policy_versions SET is_default = TRUE WHERE version_id = #{versionId}
+    </update>
+
+    <select id="getMaxVersionNumber" resultType="java.lang.Integer">
+        SELECT MAX(version_number) FROM policy_versions WHERE permission_id = #{permissionId}
+    </select>
+
+</mapper>

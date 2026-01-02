@@ -7,9 +7,7 @@ import java.util.UUID;
 
 @Mapper
 public interface UserRoleMapper {
-    @Insert("INSERT INTO user_roles(user_id, role_id, assigned_at) VALUES(#{userId}, #{roleId}, #{assignedAt})")
     void insert(UserRole userRole);
 
-    @Delete("DELETE FROM user_roles WHERE user_id=#{userId} AND role_id=#{roleId}")
     void delete(UserRole userRole);
 }

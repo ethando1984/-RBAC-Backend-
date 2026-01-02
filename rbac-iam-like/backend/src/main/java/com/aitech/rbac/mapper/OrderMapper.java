@@ -7,20 +7,13 @@ import java.util.UUID;
 
 @Mapper
 public interface OrderMapper {
-    @Select("SELECT * FROM orders")
-    List<Order> findAll();
+        List<Order> findAll();
 
-    @Select("SELECT * FROM orders WHERE order_id = #{id}")
-    Order findById(UUID id);
+        Order findById(UUID id);
 
-    @Insert("INSERT INTO orders(order_id, customer_name, total_amount, status, order_date) " +
-            "VALUES(#{orderId}, #{customerName}, #{totalAmount}, #{status}, #{orderDate})")
-    void insert(Order order);
+        void insert(Order order);
 
-    @Update("UPDATE orders SET customer_name=#{customerName}, total_amount=#{totalAmount}, " +
-            "status=#{status} WHERE order_id=#{orderId}")
-    void update(Order order);
+        void update(Order order);
 
-    @Delete("DELETE FROM orders WHERE order_id=#{id}")
-    void delete(UUID id);
+        void delete(UUID id);
 }

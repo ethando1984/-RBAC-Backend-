@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.AuditLogMapper">
+
+    <resultMap id="AuditLogResultMap" type="com.aitech.rbac.model.AuditLog">
+        <id property="logId" column="log_id"/>
+        <result property="actorUserId" column="actor_user_id"/>
+        <result property="actorEmail" column="actor_email"/>
+        <result property="actionType" column="action_type"/>
+        <result property="entityType" column="entity_type"/>
+        <result property="entityId" column="entity_id"/>
+        <result property="oldValueJson" column="old_value_json"/>
+        <result property="newValueJson" column="new_value_json"/>
+        <result property="affectedRolesCount" column="affected_roles_count"/>
+        <result property="affectedUsersCount" column="affected_users_count"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="ipAddress" column="ip_address"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.aitech.rbac.model.AuditLog">
+        INSERT INTO audit_logs (log_id, actor_user_id, actor_email, action_type, entity_type, entity_id,
+                                old_value_json, new_value_json, affected_roles_count, affected_users_count, created_at, ip_address)
+        VALUES (#{logId}, #{actorUserId}, #{actorEmail}, #{actionType}, #{entityType}, #{entityId},
+                #{oldValueJson}, #{newValueJson}, #{affectedRolesCount}, #{affectedUsersCount}, #{createdAt}, #{ipAddress})
+    </insert>
+
+    <select id="findAll" resultMap="AuditLogResultMap">
+        SELECT * FROM audit_logs
+        <where>
+            <if test="entityType != null"> AND entity_type = #{entityType} </if>
+            <if test="actionType != null"> AND action_type = #{actionType} </if>
+            <if test="fromDate != null"> AND created_at &gt;= #{fromDate} </if>
+            <if test="toDate != null"> AND created_at &lt;= #{toDate} </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>
