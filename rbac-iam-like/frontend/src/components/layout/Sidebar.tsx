@@ -9,6 +9,7 @@ import {
     ChevronLeft,
     Menu as MenuIcon,
     Grid3X3,
+    UserCircle
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -22,6 +23,7 @@ const MENU_ITEMS = [
 
     { label: 'Orders', icon: ShoppingCart, path: '/orders', permission: { namespace: 'orders', action: 'READ' } },
     { label: 'Inventory', icon: Package, path: '/inventory', permission: { namespace: 'inventory', action: 'READ' } },
+    { label: 'Profile', icon: UserCircle, path: '/profile', permission: null },
 ];
 
 interface SidebarProps {

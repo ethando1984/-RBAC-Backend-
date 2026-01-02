@@ -18,6 +18,7 @@ export const api = {
     auth: {
         login: (credentials: any) => axiosInstance.post('/auth/login', credentials).then(res => res.data),
         me: () => axiosInstance.get('/auth/me').then(res => res.data),
+        updateProfile: (data: any) => axiosInstance.put('/auth/profile', data).then(res => res.data),
     },
     users: {
         list: (params?: any) => axiosInstance.get('/users', { params }).then(res => res.data),

@@ -12,6 +12,7 @@ import Inventory from './pages/Inventory';
 import Login from './pages/Login';
 import PermissionMatrix from './pages/PermissionMatrix';
 import Settings from './pages/Settings';
+import Profile from './pages/Profile';
 import AuditLogs from './pages/AuditLogs';
 
 const queryClient = new QueryClient({
@@ -82,7 +83,8 @@ export default function App() {
                 <Route path="/inventory" element={<Inventory />} />
               </Route>
 
-              {/* Settings - accessible to all authenticated users */}
+              {/* Profile & Settings - accessible to all authenticated users */}
+              <Route path="/profile" element={<Profile />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
 

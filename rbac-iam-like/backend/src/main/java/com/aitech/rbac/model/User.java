@@ -16,6 +16,7 @@ public class User {
 
     @JsonProperty("active")
     private boolean isActive;
+    private String preferencesJson;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

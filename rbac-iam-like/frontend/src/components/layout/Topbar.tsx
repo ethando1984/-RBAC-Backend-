@@ -1,10 +1,12 @@
 import { Bell, Search, Settings, User, LogOut } from 'lucide-react';
 import { Menu, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 
 export function Topbar() {
+    const navigate = useNavigate();
     const { user, logout, effectiveAccess } = useAuth();
     const userEmail = user?.email || user?.username || "Guest";
     const initials = (user?.username || "G").substring(0, 2).toUpperCase();
@@ -61,18 +63,25 @@ export function Topbar() {
                             </div>
                             <Menu.Item>
                                 {({ active }) => (
-                                    <button className={cn("w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors", active ? "bg-gray-50 text-gray-900" : "text-gray-600")}>
+                                    <button
+                                        onClick={() => navigate('/profile')}
+                                        className={cn("w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors", active ? "bg-gray-50 text-gray-900" : "text-gray-600")}
+                                    >
                                         <User size={18} /> Profile
                                     </button>
                                 )}
                             </Menu.Item>
                             <Menu.Item>
                                 {({ active }) => (
-                                    <button className={cn("w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors", active ? "bg-gray-50 text-gray-900" : "text-gray-600")}>
+                                    <button
+                                        onClick={() => navigate('/settings')}
+                                        className={cn("w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors", active ? "bg-gray-50 text-gray-900" : "text-gray-600")}
+                                    >
                                         <Settings size={18} /> Settings
                                     </button>
                                 )}
                             </Menu.Item>
+
                             <div className="my-1 border-t border-gray-50" />
                             <Menu.Item>
                                 {({ active }) => (

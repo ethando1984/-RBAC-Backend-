@@ -17,5 +17,7 @@ public interface UserService {
 
     void update(User entity);
 
+    void updateProfile(UUID userId, com.aitech.rbac.dto.ProfileUpdateDTO dto);
+
     void delete(UUID id);
 }

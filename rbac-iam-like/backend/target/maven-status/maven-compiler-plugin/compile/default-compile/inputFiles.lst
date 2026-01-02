@@ -30,6 +30,7 @@ F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\control
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\UserRoleMapper.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\RegistryController.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\Role.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\dto\NamespaceDTO.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\ResourceAccessMapper.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\PolicyEvaluationServiceImpl.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\PermissionMapper.java
@@ -37,6 +38,8 @@ F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\model\U
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\UserGraphQLController.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\config\OpenApiConfig.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\mapper\NamespaceMapper.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\dto\ActionTypeDTO.java
+F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\dto\ProfileUpdateDTO.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\PermissionServiceImpl.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\controller\InventoryController.java
 F:\java\rbac-backend\rbac-iam-like\backend\src\main\java\com\aitech\rbac\service\impl\UserAccessServiceImpl.java

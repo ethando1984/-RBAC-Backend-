@@ -1,5 +1,6 @@
 package com.aitech.rbac.controller;
 
+import com.aitech.rbac.dto.ActionTypeDTO;
 import com.aitech.rbac.model.ActionType;
 import com.aitech.rbac.service.ActionTypeService;
 import org.springframework.web.bind.annotation.*;
@@ -20,23 +21,30 @@ public class ActionTypeController {
     }
 
     @GetMapping("/{id}")
-    public ActionType getById(@PathVariable UUID id) {
+    public ActionType getById(@PathVariable("id") UUID id) {
         return service.getById(id);
     }
 
     @PostMapping
-    public void create(@RequestBody ActionType entity) {
+    public void create(@RequestBody ActionTypeDTO dto) {
+        ActionType entity = new ActionType();
+        entity.setActionTypeId(UUID.randomUUID());
+        entity.setActionKey(dto.getActionKey());
+        entity.setDescription(dto.getDescription());
         service.create(entity);
     }
 
     @PutMapping("/{id}")
-    public void update(@PathVariable UUID id, @RequestBody ActionType entity) {
+    public void update(@PathVariable("id") UUID id, @RequestBody ActionTypeDTO dto) {
+        ActionType entity = new ActionType();
         entity.setActionTypeId(id);
+        entity.setActionKey(dto.getActionKey());
+        entity.setDescription(dto.getDescription());
         service.update(entity);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
+    public void delete(@PathVariable("id") UUID id) {
         service.delete(id);
     }
 }

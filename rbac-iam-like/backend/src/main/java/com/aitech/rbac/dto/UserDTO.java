@@ -9,4 +9,5 @@ public class UserDTO {
     private String username;
     private String email;
     private boolean active;
+    private String preferences;
 }

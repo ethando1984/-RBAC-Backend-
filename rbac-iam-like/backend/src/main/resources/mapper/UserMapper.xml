@@ -9,6 +9,7 @@
         <result property="email" column="email"/>
         <result property="passwordHash" column="password_hash"/>
         <result property="active" column="is_active"/>
+        <result property="preferencesJson" column="preferences_json"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <collection property="roles" ofType="com.aitech.rbac.model.Role"
@@ -38,8 +39,8 @@
 
     <!-- Insert User -->
     <insert id="insert" parameterType="com.aitech.rbac.model.User">
-        INSERT INTO "users"(user_id, username, email, password_hash, is_active, created_at, updated_at)
-        VALUES(#{userId}, #{username}, #{email}, #{passwordHash}, #{active}, #{createdAt}, #{updatedAt})
+        INSERT INTO "users"(user_id, username, email, password_hash, is_active, preferences_json, created_at, updated_at)
+        VALUES(#{userId}, #{username}, #{email}, #{passwordHash}, #{active}, #{preferencesJson}, #{createdAt}, #{updatedAt})
     </insert>
 
     <!-- Update User -->
@@ -49,6 +50,7 @@
             email = #{email},
             password_hash = #{passwordHash},
             is_active = #{active},
+            preferences_json = #{preferencesJson},
             updated_at = #{updatedAt}
         WHERE user_id = #{userId}
     </update>

@@ -54,6 +54,21 @@ public class AuthController {
         dto.setUsername(user.getUsername());
         dto.setEmail(user.getEmail());
         dto.setActive(user.isActive());
+        dto.setPreferences(user.getPreferencesJson());
         return dto;
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/profile")
+    public void updateProfile(
+            org.springframework.security.core.Authentication authentication,
+            @RequestBody com.aitech.rbac.dto.ProfileUpdateDTO dto) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("Unauthorized");
+        }
+        var user = userService.findByUsername(authentication.getName());
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        userService.updateProfile(user.getUserId(), dto);
     }
 }

@@ -79,6 +79,33 @@ public class UserServiceImpl implements UserService {
         mapper.update(entity);
     }
 
+    public void updateProfile(UUID userId, com.aitech.rbac.dto.ProfileUpdateDTO dto) {
+        User user = mapper.findById(userId);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+
+        if (dto.getEmail() != null && !dto.getEmail().isEmpty()) {
+            user.setEmail(dto.getEmail());
+        }
+
+        if (dto.getPreferences() != null) {
+            user.setPreferencesJson(dto.getPreferences());
+        }
+
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isEmpty()) {
+            // Validate current password
+            if (dto.getCurrentPassword() == null
+                    || !passwordEncoder.matches(dto.getCurrentPassword(), user.getPasswordHash())) {
+                throw new RuntimeException("Invalid current password");
+            }
+            user.setPasswordHash(passwordEncoder.encode(dto.getNewPassword()));
+        }
+
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        mapper.update(user);
+    }
+
     public void delete(UUID id) {
         mapper.delete(id);
     }

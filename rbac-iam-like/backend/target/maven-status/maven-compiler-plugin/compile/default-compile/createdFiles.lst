@@ -81,11 +81,14 @@ com\aitech\rbac\dto\PolicyDocument.class
 com\aitech\rbac\config\PasswordConfig.class
 com\aitech\rbac\model\Namespace.class
 com\aitech\rbac\controller\UserAccessController.class
+com\aitech\rbac\dto\NamespaceDTO.class
 com\aitech\rbac\dto\UserDTO.class
 com\aitech\rbac\mapper\UserRoleMapper.class
+com\aitech\rbac\dto\ActionTypeDTO.class
 com\aitech\rbac\mapper\ActionTypeMapper.class
 com\aitech\rbac\model\policy\PolicyStatement$Effect.class
 com\aitech\rbac\service\impl\RoleServiceImpl.class
+com\aitech\rbac\dto\ProfileUpdateDTO.class
 com\aitech\rbac\service\impl\ActionTypeServiceImpl.class
 com\aitech\rbac\dto\UserAccessFlatDTO.class
 com\aitech\rbac\service\UserService.class

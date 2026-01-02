@@ -6,6 +6,7 @@ interface AuthContextType {
     effectiveAccess: any | null;
     login: (token: string) => void;
     logout: () => void;
+    refreshUser: () => Promise<void>;
     isLoading: boolean;
     can: (namespace: string, action: string) => boolean;
     hasRole: (role: string) => boolean;
@@ -73,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, effectiveAccess, login, logout, isLoading, can, hasRole }}>
+        <AuthContext.Provider value={{ user, effectiveAccess, login, logout, refreshUser: fetchProfile, isLoading, can, hasRole }}>
             {children}
         </AuthContext.Provider>
     );
