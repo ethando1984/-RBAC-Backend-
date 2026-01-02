@@ -123,16 +123,20 @@ public class DataInitializer {
                                         hrNs.getNamespaceId(), allAct.getActionTypeId());
 
                         // 6. Create Roles
-                        Role superAdminRole = createRole(roleMapper, "Super Administrator", "Full system owner", true);
-                        Role opsManagerRole = createRole(roleMapper, "Operations Manager",
+                        Role superAdminRole = createRole(roleMapper, "Super Administrator", "ADMIN",
+                                        "Full system owner", true);
+                        Role opsManagerRole = createRole(roleMapper, "Operations Manager", "OPS_MGR",
                                         "Handles orders and inventory", false);
-                        Role warehouseClerkRole = createRole(roleMapper, "Warehouse Clerk", "Updates stock levels",
+                        Role warehouseClerkRole = createRole(roleMapper, "Warehouse Clerk", "CLERK",
+                                        "Updates stock levels",
                                         false);
-                        Role auditorRole = createRole(roleMapper, "Security Auditor", "System monitoring and logs",
+                        Role auditorRole = createRole(roleMapper, "Security Auditor", "AUDITOR",
+                                        "System monitoring and logs",
                                         false);
-                        Role marketingLeadRole = createRole(roleMapper, "Marketing Lead",
+                        Role marketingLeadRole = createRole(roleMapper, "Marketing Lead", "MARKETING",
                                         "Manages campaigns and strategy", false);
-                        Role hrAdminRole = createRole(roleMapper, "HR Administrator", "Manages people and payroll",
+                        Role hrAdminRole = createRole(roleMapper, "HR Administrator", "HR_ADMIN",
+                                        "Manages people and payroll",
                                         false);
 
                         // 7. Assign Permissions to Roles
@@ -190,10 +194,11 @@ public class DataInitializer {
                 return u;
         }
 
-        private Role createRole(RoleMapper mapper, String name, String desc, boolean isSystem) {
+        private Role createRole(RoleMapper mapper, String name, String key, String desc, boolean isSystem) {
                 Role r = new Role();
                 r.setRoleId(UUID.randomUUID());
                 r.setRoleName(name);
+                r.setRoleKey(key);
                 r.setDescription(desc);
                 r.setSystemRole(isSystem);
                 mapper.insert(r);

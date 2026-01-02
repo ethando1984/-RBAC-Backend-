@@ -20,4 +20,6 @@ public interface PolicyVersionMapper {
         void setAsDefault(UUID versionId);
 
         Integer getMaxVersionNumber(UUID permissionId);
+
+        void deleteByPermissionId(UUID permissionId);
 }

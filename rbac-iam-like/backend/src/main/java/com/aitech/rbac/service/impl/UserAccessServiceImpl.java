@@ -33,6 +33,9 @@ public class UserAccessServiceImpl implements UserAccessService {
 
         for (UserAccessFlatDTO flat : flatList) {
             UUID roleId = flat.getRoleId();
+            if (roleId == null)
+                continue;
+
             UserAccessDTO.RoleDTO roleDTO = roleMap.get(roleId);
             if (roleDTO == null) {
                 roleDTO = new UserAccessDTO.RoleDTO();
@@ -43,14 +46,8 @@ public class UserAccessServiceImpl implements UserAccessService {
                 userAccess.getRoles().add(roleDTO);
             }
 
-            // Permission might correspond to a resource access mapping
-            // Note: The query joins permissions p, resource_access ra, namespaces n,
-            // action_types a
-            // So for each permission there might be multiple namespace/actions?
-            // Query: JOIN permissions p ON rp.permission_id = p.permission_id
-            // JOIN resource_access ra ON p.permission_id = ra.permission_id
-            // This means each permission in the list IS a single tuple of (perm, ns,
-            // action).
+            if (flat.getPermissionId() == null)
+                continue;
 
             UserAccessDTO.PermissionDTO permDTO = new UserAccessDTO.PermissionDTO();
             permDTO.setPermissionId(flat.getPermissionId());

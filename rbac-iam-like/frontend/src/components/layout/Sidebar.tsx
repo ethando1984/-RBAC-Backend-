@@ -8,7 +8,7 @@ import {
     Package,
     ChevronLeft,
     Menu as MenuIcon,
-    Grid3X3
+    Grid3X3,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -19,6 +19,7 @@ const MENU_ITEMS = [
     { label: 'Roles', icon: ShieldCheck, path: '/roles', permission: { namespace: 'roles', action: 'READ' } },
     { label: 'Policies', icon: FileKey, path: '/policies', permission: { namespace: 'policies', action: 'READ' } },
     { label: 'Security Matrix', icon: Grid3X3, path: '/matrix', permission: { namespace: 'policies', action: 'READ' } },
+
     { label: 'Orders', icon: ShoppingCart, path: '/orders', permission: { namespace: 'orders', action: 'READ' } },
     { label: 'Inventory', icon: Package, path: '/inventory', permission: { namespace: 'inventory', action: 'READ' } },
 ];
@@ -64,19 +65,27 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             {/* Nav */}
             <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
                 {visibleItems.map((item) => {
-                    const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+                    const isActive = item.path === '/'
+                        ? location.pathname === '/'
+                        : (location.pathname + location.search) === item.path ||
+                        (location.pathname === item.path.split('?')[0] && (item.path.includes('?') ? (location.search === item.path.slice(item.path.indexOf('?'))) : location.pathname === item.path));
+
+                    // Fallback for sub-routes if not an exact match with query
+                    const isSubroute = !isActive && item.path !== '/' && location.pathname.startsWith(item.path.split('?')[0]);
+                    const highlighted = isActive || isSubroute;
+
                     return (
                         <button
                             key={item.label}
                             onClick={() => navigate(item.path)}
                             className={cn(
                                 "w-full flex items-center px-3 py-2.5 rounded-xl transition-all group relative",
-                                isActive
+                                highlighted
                                     ? "bg-primary-50 text-primary-600"
                                     : "text-gray-500 hover:bg-gray-50 hover:text-gray-900"
                             )}
                         >
-                            <item.icon size={20} className={cn("shrink-0", isActive ? "text-primary-600" : "text-gray-400 group-hover:text-gray-900")} />
+                            <item.icon size={20} className={cn("shrink-0", highlighted ? "text-primary-600" : "text-gray-400 group-hover:text-gray-900")} />
                             <span className={cn(
                                 "ml-3 font-semibold transition-all duration-300 whitespace-nowrap",
                                 collapsed ? "opacity-0 w-0" : "opacity-100"
@@ -84,9 +93,10 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
                                 {item.label}
                             </span>
 
-                            {isActive && (
+                            {highlighted && (
                                 <div className="absolute left-0 w-1 h-6 bg-primary-500 rounded-r-full" />
                             )}
+
 
                             {collapsed && (
                                 <div className="absolute left-16 px-2 py-1 bg-gray-900 text-white text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 translate-x-[-10px] group-hover:translate-x-0 whitespace-nowrap z-50">

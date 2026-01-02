@@ -4,12 +4,22 @@ import { Card, CardContent, CardHeader } from '../components/ui/Card';
 import { Shield, Box, Activity, Check, Info, Settings2, Users } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
+import { NamespaceActionManager } from '../components/security/NamespaceActionManager';
 
 export default function PermissionMatrix() {
     const queryClient = useQueryClient();
-    const [viewMode, setViewMode] = useState<'resource' | 'role'>('resource');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const initialTab = (searchParams.get('tab') as any) || 'resource';
+    const [viewMode, setViewMode] = useState<'resource' | 'role' | 'definitions'>(initialTab);
+
+    const handleViewModeChange = (mode: 'resource' | 'role' | 'definitions') => {
+        setViewMode(mode);
+        setSearchParams({ tab: mode });
+    };
+
     const [hoveredCell, setHoveredCell] = useState<{ pId: string, nsId: string, atId: string } | null>(null);
     const [isScopeModalOpen, setIsScopeModalOpen] = useState(false);
     const [editingPolicy, setEditingPolicy] = useState<any>(null);
@@ -116,7 +126,7 @@ export default function PermissionMatrix() {
 
                 <div className="flex bg-gray-100 p-1 rounded-2xl w-fit">
                     <button
-                        onClick={() => setViewMode('resource')}
+                        onClick={() => handleViewModeChange('resource')}
                         className={cn(
                             "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
                             viewMode === 'resource' ? "bg-white text-primary-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
@@ -125,13 +135,22 @@ export default function PermissionMatrix() {
                         Resource Scopes
                     </button>
                     <button
-                        onClick={() => setViewMode('role')}
+                        onClick={() => handleViewModeChange('role')}
                         className={cn(
                             "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
                             viewMode === 'role' ? "bg-white text-primary-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
                         )}
                     >
                         Role Mapping
+                    </button>
+                    <button
+                        onClick={() => handleViewModeChange('definitions')}
+                        className={cn(
+                            "px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all",
+                            viewMode === 'definitions' ? "bg-white text-primary-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                        )}
+                    >
+                        Definitions
                     </button>
                 </div>
             </div>
@@ -164,6 +183,10 @@ export default function PermissionMatrix() {
                     {isLoading ? (
                         <div className="py-24 flex justify-center">
                             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
+                        </div>
+                    ) : viewMode === 'definitions' ? (
+                        <div className="p-8">
+                            <NamespaceActionManager />
                         </div>
                     ) : (
                         <div className="overflow-x-auto custom-scrollbar">
@@ -259,25 +282,27 @@ export default function PermissionMatrix() {
                                                                                 : "bg-white border-gray-100 text-gray-200 hover:border-primary-200 hover:text-primary-300",
                                                                             isPending && "opacity-50 cursor-wait"
                                                                         )}
-                                                                        title={`${policy.permissionName} » ${ns.namespaceKey}:${at.actionKey}`}
+                                                                        title={`${policy.permissionName} \u00BB ${ns.namespaceKey}:${at.actionKey}`}
                                                                     >
                                                                         {isAssigned ? (
                                                                             <Check size={18} strokeWidth={3} className="animate-in zoom-in duration-300" />
                                                                         ) : (
-                                                                            <Plus size={14} className="opacity-0 group-hover/cell:opacity-100 transition-opacity" />
+                                                                            <PlusIcon size={14} className="opacity-0 group-hover/cell:opacity-100 transition-opacity" />
                                                                         )}
 
                                                                         {/* Tooltip detail on hover */}
                                                                         {hoveredCell?.pId === policy.permissionId &&
                                                                             hoveredCell?.nsId === ns.namespaceId &&
                                                                             hoveredCell?.atId === at.actionTypeId && (
-                                                                                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-2xl text-[10px] font-bold z-50 shadow-2xl pointer-events-none whitespace-nowrap animate-in slide-in-from-bottom-2">
-                                                                                    <div className="flex items-center gap-2 uppercase tracking-widest text-primary-400 border-b border-white/10 pb-1 mb-1">
+                                                                                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-2xl text-[10px] font-bold z-50 shadow-2xl pointer-events-none whitespace-nowrap animate-in slide-in-from-bottom-2 text-left">
+                                                                                    <div className="flex items-center gap-2 uppercase tracking-widest text-primary-400 border-b border-white/10 pb-1 mb-1 font-black">
                                                                                         <Info size={12} /> Resource Authority Scope
                                                                                     </div>
-                                                                                    <div>DOMAIN: {ns.namespaceKey}</div>
-                                                                                    <div>ACTION: {at.actionKey}</div>
-                                                                                    <div className={cn("mt-1 font-black", isAssigned ? "text-emerald-400" : "text-rose-400")}>
+                                                                                    <div className="flex flex-col gap-0.5">
+                                                                                        <span>DOMAIN: <span className="text-white/60">{ns.namespaceKey}</span></span>
+                                                                                        <span>ACTION: <span className="text-white/60">{at.actionKey}</span></span>
+                                                                                    </div>
+                                                                                    <div className={cn("mt-1 font-black uppercase tracking-tighter", isAssigned ? "text-emerald-400" : "text-rose-400")}>
                                                                                         {isPending ? 'SYNCHRONIZING...' : `STATUS: ${isAssigned ? 'AUTHORIZED' : 'RESTRICTED'}`}
                                                                                     </div>
                                                                                 </div>
@@ -413,9 +438,9 @@ export default function PermissionMatrix() {
                                                         )}
                                                     >
                                                         {isAssigned ? (
-                                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="rotate-45"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                                                            <Check size={20} className="animate-in zoom-in" />
                                                         ) : (
-                                                            <Box size={16} className="opacity-40" />
+                                                            <PlusIcon size={16} className="opacity-40" />
                                                         )}
                                                     </button>
                                                 </td>
@@ -438,18 +463,8 @@ export default function PermissionMatrix() {
     );
 }
 
-const Plus = ({ size, className }: { size: number, className?: string }) => (
-    <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-    >
+const PlusIcon = ({ size, className }: { size: number, className?: string }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <line x1="12" y1="5" x2="12" y2="19" />
         <line x1="5" y1="12" x2="19" y2="12" />
     </svg>

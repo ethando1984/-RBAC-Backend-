@@ -48,6 +48,8 @@ export const api = {
         seal: (id: string, data: { matrix: any, confirmImpact: boolean }) => axiosInstance.post(`/policies/${id}/seal`, data).then(res => res.data),
         getVersions: (id: string) => axiosInstance.get(`/policies/${id}/versions`).then(res => res.data),
         rollback: (id: string, versionId: string) => axiosInstance.post(`/policies/${id}/rollback/${versionId}`).then(res => res.data),
+        create: (data: any) => axiosInstance.post('/permissions', data).then(res => res.data),
+        delete: (id: string) => axiosInstance.delete(`/permissions/${id}`),
     },
     audit: {
         list: (params?: any) => axiosInstance.get('/audit-logs', { params }).then(res => res.data),
@@ -57,9 +59,15 @@ export const api = {
     },
     namespaces: {
         list: () => axiosInstance.get('/namespaces').then(res => res.data),
+        create: (data: any) => axiosInstance.post('/namespaces', data).then(res => res.data),
+        update: (id: string, data: any) => axiosInstance.put(`/namespaces/${id}`, data).then(res => res.data),
+        delete: (id: string) => axiosInstance.delete(`/namespaces/${id}`),
     },
     actionTypes: {
         list: () => axiosInstance.get('/action-types').then(res => res.data),
+        create: (data: any) => axiosInstance.post('/action-types', data).then(res => res.data),
+        update: (id: string, data: any) => axiosInstance.put(`/action-types/${id}`, data).then(res => res.data),
+        delete: (id: string) => axiosInstance.delete(`/action-types/${id}`),
     },
     assignments: {
         assignPermission: (roleId: string, permissionId: string) => axiosInstance.post(`/roles/${roleId}/permissions/${permissionId}`),

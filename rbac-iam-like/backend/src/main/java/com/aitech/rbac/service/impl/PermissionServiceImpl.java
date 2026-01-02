@@ -1,17 +1,21 @@
 package com.aitech.rbac.service.impl;
 
 import com.aitech.rbac.mapper.PermissionMapper;
+import com.aitech.rbac.mapper.PolicyVersionMapper;
 import com.aitech.rbac.model.Permission;
 import com.aitech.rbac.service.PermissionService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
 public class PermissionServiceImpl implements PermissionService {
     private final PermissionMapper mapper;
+    private final PolicyVersionMapper policyVersionMapper;
 
-    public PermissionServiceImpl(PermissionMapper mapper) {
+    public PermissionServiceImpl(PermissionMapper mapper, PolicyVersionMapper policyVersionMapper) {
         this.mapper = mapper;
+        this.policyVersionMapper = policyVersionMapper;
     }
 
     public List<Permission> getAll() {
@@ -33,7 +37,9 @@ public class PermissionServiceImpl implements PermissionService {
         mapper.update(entity);
     }
 
+    @Transactional
     public void delete(UUID id) {
+        policyVersionMapper.deleteByPermissionId(id);
         mapper.delete(id);
     }
 }

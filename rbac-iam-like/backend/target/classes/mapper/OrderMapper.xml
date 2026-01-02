@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.OrderMapper">
+
+    <select id="findAll" resultType="com.aitech.rbac.model.Order">
+        SELECT * FROM orders
+    </select>
+
+    <select id="findById" resultType="com.aitech.rbac.model.Order">
+        SELECT * FROM orders WHERE order_id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.aitech.rbac.model.Order">
+        INSERT INTO orders(order_id, customer_name, total_amount, status, order_date)
+        VALUES(#{orderId}, #{customerName}, #{totalAmount}, #{status}, #{orderDate})
+    </insert>
+
+    <update id="update" parameterType="com.aitech.rbac.model.Order">
+        UPDATE orders SET customer_name=#{customerName}, total_amount=#{totalAmount},
+        status=#{status} WHERE order_id=#{orderId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM orders WHERE order_id=#{id}
+    </delete>
+
+</mapper>

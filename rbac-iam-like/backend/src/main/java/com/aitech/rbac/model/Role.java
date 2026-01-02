@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class Role {
     private UUID roleId;
     private String roleName;
+    private String roleKey;
     private String description;
     private boolean isSystemRole;
 }

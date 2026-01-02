@@ -48,20 +48,24 @@ export default function UserDetail() {
     });
 
     const assignRoleMut = useMutation({
-        mutationFn: (roleId: string) => api.assignments.assignRole(id!, roleId),
+        mutationFn: (roleId: string) => api.users.assignRole(id!, roleId),
         onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user', id] });
             queryClient.invalidateQueries({ queryKey: ['access', id] });
             setSelectedRole('');
         }
     });
 
     const revokeRoleMut = useMutation({
-        mutationFn: (roleId: string) => api.assignments.revokeRole(id!, roleId),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['access', id] })
+        mutationFn: (roleId: string) => api.users.removeRole(id!, roleId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['user', id] });
+            queryClient.invalidateQueries({ queryKey: ['access', id] });
+        }
     });
 
     const access: EffectiveAccess | undefined = accessList?.[0];
-    const assignedRoleIds = new Set(access?.roles.map(r => r.roleId));
+    const assignedRoleIds = new Set(user?.roles?.map(r => r.roleId) || []);
 
     const handleAssign = () => {
         if (selectedRole) assignRoleMut.mutate(selectedRole);
@@ -171,23 +175,25 @@ export default function UserDetail() {
                         <CardContent>
                             <div className="space-y-4">
                                 <div className="flex flex-wrap gap-2 min-h-[40px]">
-                                    {access?.roles.map(role => (
+                                    {user?.roles?.map(role => (
                                         <Badge
                                             key={role.roleId}
-                                            variant="default"
-                                            className="pl-2 pr-1 py-1 flex items-center gap-1"
+                                            variant="secondary"
+                                            className="pl-3 pr-1 py-1 flex items-center gap-2 bg-indigo-50/50 text-indigo-700 border-indigo-100 hover:bg-indigo-100/50 transition-all group"
                                         >
-                                            {role.roleName}
+                                            <span className="text-xs font-bold tracking-tight">{role.roleName}</span>
                                             <button
                                                 onClick={() => revokeRoleMut.mutate(role.roleId)}
-                                                className="p-0.5 hover:bg-white/20 rounded-full transition-colors"
+                                                className="p-1 hover:bg-indigo-200/50 text-indigo-400 hover:text-indigo-600 rounded-full transition-all"
+                                                title="Revoke Role"
                                             >
-                                                <X size={12} />
+                                                <X size={14} strokeWidth={3} />
                                             </button>
                                         </Badge>
                                     ))}
-                                    {access?.roles.length === 0 && (
-                                        <div className="text-xs text-gray-400 italic py-2 flex items-center justify-center w-full border border-dashed border-gray-200 rounded-xl bg-gray-50/50">
+                                    {(user?.roles?.length === 0 || !user?.roles) && (
+                                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider py-4 flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-100 rounded-2xl bg-gray-50/30">
+                                            <Shield size={16} className="mb-2 opacity-20" />
                                             No roles assigned
                                         </div>
                                     )}

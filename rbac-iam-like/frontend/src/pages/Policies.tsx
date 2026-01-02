@@ -6,7 +6,7 @@ import { PaginationFooter } from '../components/common/PaginationFooter';
 import { useViewParams } from '../hooks/useViewParams';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Shield, Box, History, MoreHorizontal, AlertTriangle, Lock, Check } from 'lucide-react';
+import { Shield, Box, History, MoreHorizontal, AlertTriangle, Lock, Check, Plus, Trash2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Modal } from '../components/ui/Modal';
 import { PolicyVersionsModal } from '../components/PolicyVersionsModal';
@@ -33,6 +33,9 @@ export default function Policies() {
     const [historyPolicyId, setHistoryPolicyId] = useState<string | null>(null);
     const [confirmImpactOpen, setConfirmImpactOpen] = useState(false);
     const [impactData, setImpactData] = useState<any>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [policyToDelete, setPolicyToDelete] = useState<any>(null);
+    const [newPolicy, setNewPolicy] = useState({ permissionName: '', permissionKey: '', description: '' });
 
     // Data Queries
     const { data: policiesData } = useQuery({
@@ -68,6 +71,23 @@ export default function Policies() {
     const revokeScopeMutation = useMutation({
         mutationFn: (data: any) => api.assignments.revokeResourceAccess(data),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['resource-access-all'] })
+    });
+
+    const createPolicyMutation = useMutation({
+        mutationFn: (data: any) => api.policies.create(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['policies'] });
+            setIsCreateModalOpen(false);
+            setNewPolicy({ permissionName: '', permissionKey: '', description: '' });
+        }
+    });
+
+    const deletePolicyMutation = useMutation({
+        mutationFn: (id: string) => api.policies.delete(id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['policies'] });
+            setPolicyToDelete(null);
+        }
     });
 
     // --- Policy Engine Logic ---
@@ -115,6 +135,16 @@ export default function Policies() {
         sealPolicyMutation.mutate({ matrix: currentMatrix, confirmImpact: true });
     };
 
+    const handleDeleteClick = (policy: any) => {
+        setPolicyToDelete(policy);
+    };
+
+    const confirmDelete = () => {
+        if (policyToDelete) {
+            deletePolicyMutation.mutate(policyToDelete.permissionId);
+        }
+    };
+
     const toggleScope = (namespaceId: string, actionTypeId: string, isAssigned: boolean) => {
         const data = { permissionId: editingPolicy.permissionId, namespaceId, actionTypeId };
         isAssigned ? revokeScopeMutation.mutate(data) : assignScopeMutation.mutate(data);
@@ -141,6 +171,10 @@ export default function Policies() {
                         <div className="text-xs text-gray-400 font-bold uppercase tracking-widest">Domains</div>
                         <div className="text-xl font-black text-gray-900 leading-none">{namespaces?.length || 0}</div>
                     </div>
+                    <Button onClick={() => setIsCreateModalOpen(true)} className="rounded-xl shadow-lg shadow-primary-500/20 px-6 font-black uppercase tracking-widest text-xs h-12 text-white bg-indigo-600 hover:bg-indigo-700 transition-all">
+                        <Plus size={18} className="mr-2" />
+                        Add Policy
+                    </Button>
                 </div>
             </div>
 
@@ -221,13 +255,18 @@ export default function Policies() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-2 text-white">
                                             <Button size="sm" variant="ghost" onClick={() => setHistoryPolicyId(policy.permissionId)}>
                                                 <History size={14} className="text-gray-400 hover:text-gray-600" />
                                             </Button>
-                                            <Button size="sm" variant="outline" onClick={() => setEditingPolicy(policy)}>
+                                            <Button size="sm" variant="outline" className="text-gray-600" onClick={() => setEditingPolicy(policy)}>
                                                 Example Scope
                                             </Button>
+                                            {(policy.resourceAccessCount || 0) === 0 && (policy.attachedRoleCount || 0) === 0 && (
+                                                <Button size="sm" variant="ghost" className="text-rose-400 hover:text-rose-600 hover:bg-rose-50" onClick={() => handleDeleteClick(policy)}>
+                                                    <Trash2 size={14} />
+                                                </Button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -265,6 +304,15 @@ export default function Policies() {
                                                         </button>
                                                     )}
                                                 </Menu.Item>
+                                                {(policy.resourceAccessCount || 0) === 0 && (policy.attachedRoleCount || 0) === 0 && (
+                                                    <Menu.Item>
+                                                        {({ active }) => (
+                                                            <button onClick={() => handleDeleteClick(policy)} className={cn("flex w-full items-center gap-2 px-3 py-2 text-xs font-medium rounded-lg text-rose-600", active ? "bg-rose-50" : "")}>
+                                                                <Trash2 size={14} /> Delete Policy
+                                                            </button>
+                                                        )}
+                                                    </Menu.Item>
+                                                )}
                                             </Menu.Items>
                                         </Transition>
                                     </Menu>
@@ -387,7 +435,7 @@ export default function Policies() {
                 </div>
                 <div className="flex justify-end gap-3">
                     <Button variant="ghost" onClick={() => setConfirmImpactOpen(false)}>Cancel</Button>
-                    <Button variant="danger" onClick={confirmSeal} disabled={sealPolicyMutation.isPending}>
+                    <Button variant="destructive" onClick={confirmSeal} disabled={sealPolicyMutation.isPending}>
                         {sealPolicyMutation.isPending ? 'Processing...' : 'Confirm & Seal'}
                     </Button>
                 </div>
@@ -399,6 +447,91 @@ export default function Policies() {
                 onClose={() => setHistoryPolicyId(null)}
                 policyId={historyPolicyId}
             />
+
+            {/* Create Modal */}
+            <Modal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                title="Create Internal IAM Policy"
+                description="Define a new logical permission structure."
+            >
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Friendly Name</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. Sales Management"
+                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-100 outline-none transition-all"
+                            value={newPolicy.permissionName}
+                            onChange={e => setNewPolicy({ ...newPolicy, permissionName: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Unique Policy Key</label>
+                        <input
+                            type="text"
+                            placeholder="e.g. SALES_MGMT"
+                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm font-mono focus:ring-2 focus:ring-primary-100 outline-none transition-all uppercase"
+                            value={newPolicy.permissionKey}
+                            onChange={e => setNewPolicy({ ...newPolicy, permissionKey: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '') })}
+                        />
+                        <p className="mt-1 text-[9px] text-gray-400">Used for technical references in codebase and JSON documents.</p>
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Description</label>
+                        <textarea
+                            placeholder="Describe what authority this policy governs..."
+                            className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary-100 outline-none transition-all min-h-[100px]"
+                            value={newPolicy.description}
+                            onChange={e => setNewPolicy({ ...newPolicy, description: e.target.value })}
+                        />
+                    </div>
+                    <div className="flex gap-3 pt-2">
+                        <Button variant="ghost" className="flex-1 rounded-xl" onClick={() => setIsCreateModalOpen(false)}>Cancel</Button>
+                        <Button
+                            className="flex-1 rounded-xl font-black uppercase tracking-widest text-xs"
+                            onClick={() => createPolicyMutation.mutate(newPolicy)}
+                            disabled={!newPolicy.permissionName || !newPolicy.permissionKey || createPolicyMutation.isPending}
+                        >
+                            {createPolicyMutation.isPending ? 'Propagating...' : 'Create Policy'}
+                        </Button>
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Permanent Deletion Modal */}
+            <Modal
+                isOpen={!!policyToDelete}
+                onClose={() => setPolicyToDelete(null)}
+                title="Confirm Policy Deletion"
+                description={`This will permanently remove '${policyToDelete?.permissionName}' and all of its version history.`}
+            >
+                <div className="bg-rose-50 border border-rose-100 rounded-2xl p-6 mb-6">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-white rounded-xl shadow-sm text-rose-500">
+                            <Trash2 size={24} />
+                        </div>
+                        <div>
+                            <div className="text-sm font-black text-rose-900 uppercase tracking-widest">Danger Zone</div>
+                            <div className="text-[10px] text-rose-600 font-bold">This operation is irreversible.</div>
+                        </div>
+                    </div>
+                    <p className="text-xs text-rose-800 leading-relaxed font-medium">
+                        You are about to delete an IAM logical policy. Since it has <b>0 scopes</b> and <b>0 mapped roles</b>, it is safe to remove, but you will lose the historical configuration data associated with it.
+                    </p>
+                </div>
+                <div className="flex gap-3">
+                    <Button variant="ghost" className="flex-1 rounded-xl" onClick={() => setPolicyToDelete(null)}>Cancel</Button>
+                    <Button
+                        variant="destructive"
+                        className="flex-1 rounded-xl font-black uppercase tracking-widest text-xs"
+                        onClick={confirmDelete}
+                        disabled={deletePolicyMutation.isPending}
+                    >
+                        {deletePolicyMutation.isPending ? 'Purging...' : 'Permanently Delete'}
+                    </Button>
+                </div>
+            </Modal>
         </div>
     );
 }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aitech.rbac.mapper.PolicyMapper">
+
+    <resultMap id="PolicySearchResultMap" type="com.aitech.rbac.model.Permission">
+        <id property="permissionId" column="permission_id"/>
+        <result property="permissionName" column="permission_name"/>
+        <result property="permissionKey" column="permission_key"/>
+        <result property="description" column="description"/>
+        <result property="resourceAccessCount" column="resource_access_count"/>
+        <result property="attachedRoleCount" column="attached_role_count"/>
+    </resultMap>
+
+    <select id="searchPolicies" resultMap="PolicySearchResultMap">
+        SELECT p.*,
+        (SELECT COUNT(*) FROM role_permissions rp WHERE rp.permission_id = p.permission_id) as attached_role_count,
+        (SELECT COUNT(*) FROM namespaces n WHERE p.permission_key LIKE CONCAT(n.namespace_key, '%') ) as resource_access_count
+        FROM permissions p
+        <where>
+            <if test="search != null">
+                AND (LOWER(p.permission_name) LIKE LOWER(CONCAT('%', #{search}, '%')) OR LOWER(p.permission_key) LIKE LOWER(CONCAT('%', #{search}, '%')))
+            </if>
+            <if test="domain != null">
+                AND p.permission_key LIKE CONCAT(#{domain}, '%')
+            </if>
+            <if test='usage == "BOUND"'>
+                AND EXISTS (SELECT 1 FROM role_permissions rp WHERE rp.permission_id = p.permission_id)
+            </if>
+            <if test='usage == "UNBOUND"'>
+                AND NOT EXISTS (SELECT 1 FROM role_permissions rp WHERE rp.permission_id = p.permission_id)
+            </if>
+        </where>
+        ORDER BY p.permission_name ASC
+    </select>
+
+    <select id="countBoundRoles" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT r.role_id) FROM role_permissions rp
+        JOIN roles r ON rp.role_id = r.role_id
+        WHERE rp.permission_id = #{permissionId}
+    </select>
+
+    <select id="countAffectedUsers" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT ur.user_id) FROM user_roles ur
+        JOIN role_permissions rp ON ur.role_id = rp.role_id
+        WHERE rp.permission_id = #{permissionId}
+    </select>
+
+    <select id="getPermissionName" resultType="java.lang.String">
+        SELECT permission_name FROM permissions WHERE permission_id = #{permissionId}
+    </select>
+
+</mapper>
