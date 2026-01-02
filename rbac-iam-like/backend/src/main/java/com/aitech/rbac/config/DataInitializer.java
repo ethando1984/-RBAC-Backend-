@@ -55,6 +55,7 @@ public class DataInitializer {
                         Namespace inventoryNs = createNamespace(namespaceMapper, "inventory", "Warehouse Inventory");
                         Namespace marketingNs = createNamespace(namespaceMapper, "marketing", "Marketing Campaigns");
                         Namespace hrNs = createNamespace(namespaceMapper, "hr", "Human Resources");
+                        Namespace articlesNs = createNamespace(namespaceMapper, "articles", "CMS Articles");
 
                         // 3. Create Action Types
                         ActionType allAct = createActionType(actionTypeMapper, "*", "Full Control (Wildcard)");
@@ -66,6 +67,9 @@ public class DataInitializer {
                         // 4. Create Permissions (Logical Policies)
                         Permission fullAccess = createPermission(permissionMapper, "FULLSYSTEMACCESS", "system:*",
                                         "Unlimited access to all resources");
+                        Permission articlesManage = createPermission(permissionMapper, "ARTICLES_MANAGEMENT",
+                                        "articles:Full",
+                                        "Manage CMS articles and content");
                         Permission iamAdmin = createPermission(permissionMapper, "IAM_MANAGEMENT", "iam:Admin",
                                         "Manage users, roles and permissions");
                         Permission inventoryManage = createPermission(permissionMapper, "INVENTORY_MANAGEMENT",
@@ -90,6 +94,9 @@ public class DataInitializer {
                         createResourceAccess(resourceAccessMapper, fullAccess.getPermissionId(),
                                         systemNs.getNamespaceId(),
                                         allAct.getActionTypeId());
+
+                        createResourceAccess(resourceAccessMapper, articlesManage.getPermissionId(),
+                                        articlesNs.getNamespaceId(), allAct.getActionTypeId());
 
                         createResourceAccess(resourceAccessMapper, iamAdmin.getPermissionId(),
                                         systemNs.getNamespaceId(),
@@ -149,6 +156,8 @@ public class DataInitializer {
                         assignPermission(rolePermissionMapper, opsManagerRole.getRoleId(),
                                         inventoryManage.getPermissionId());
 
+                        assignPermission(rolePermissionMapper, warehouseClerkRole.getRoleId(),
+                                        articlesManage.getPermissionId());
                         assignPermission(rolePermissionMapper, warehouseClerkRole.getRoleId(),
                                         inventoryManage.getPermissionId());
 
