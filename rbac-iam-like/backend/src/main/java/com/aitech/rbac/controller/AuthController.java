@@ -19,15 +19,18 @@ public class AuthController {
     private final UserDetailsService userDetailsService;
     private final JwtService jwtService;
     private final com.aitech.rbac.service.UserService userService;
+    private final com.aitech.rbac.service.UserAccessService userAccessService;
 
     public AuthController(AuthenticationManager authenticationManager,
             UserDetailsService userDetailsService,
             JwtService jwtService,
-            com.aitech.rbac.service.UserService userService) {
+            com.aitech.rbac.service.UserService userService,
+            com.aitech.rbac.service.UserAccessService userAccessService) {
         this.authenticationManager = authenticationManager;
         this.userDetailsService = userDetailsService;
         this.jwtService = jwtService;
         this.userService = userService;
+        this.userAccessService = userAccessService;
     }
 
     @PostMapping("/login")
@@ -35,7 +38,28 @@ public class AuthController {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         var userDetails = userDetailsService.loadUserByUsername(request.getUsername());
-        String token = jwtService.generateToken(userDetails);
+
+        var user = userService.findByUsername(request.getUsername());
+        var accessList = userAccessService.getUserAccess(user.getUserId());
+
+        java.util.Map<String, Object> extraClaims = new java.util.HashMap<>();
+        if (!accessList.isEmpty()) {
+            var access = accessList.get(0);
+            java.util.List<String> roles = access.getRoles().stream()
+                    .map(com.aitech.rbac.dto.UserAccessDTO.RoleDTO::getRoleName)
+                    .toList();
+            java.util.List<String> permissions = access.getRoles().stream()
+                    .flatMap(r -> r.getPermissions().stream())
+                    .map(p -> p.getNamespaceKey() + ":" + p.getActionKey())
+                    .distinct()
+                    .toList();
+
+            extraClaims.put("roles", roles);
+            extraClaims.put("permissions", permissions);
+            extraClaims.put("email", user.getEmail());
+        }
+
+        String token = jwtService.generateToken(extraClaims, userDetails);
         return new AuthResponse(token);
     }
 
