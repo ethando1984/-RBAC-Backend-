@@ -6,9 +6,9 @@ spring:
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
   application:
-    name: hemera-backend
+    name: Hyperion-backend
   datasource:
-    url: jdbc:h2:mem:hemera;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    url: jdbc:h2:mem:hyperion;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
     username: sa
     password:
     driver-class-name: org.h2.Driver
@@ -45,7 +45,7 @@ springdoc:
   show-actuator: true
 
 mybatis:
-  type-handlers-package: com.hemera.cms.handler
+  type-handlers-package: com.hyperion.cms.handler
   configuration:
     map-underscore-to-camel-case: true
 
@@ -54,9 +54,9 @@ server:
 
 logging:
   level:
-    com.hemera.cms: DEBUG
+    com.hyperion.cms: DEBUG
     org.springframework.security: DEBUG
 
-hemera:
+hyperion:
   cors:
     allowed-origins: http://localhost:5173

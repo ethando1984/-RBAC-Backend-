@@ -8,11 +8,11 @@
 		<version>3.2.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.hemera</groupId>
-	<artifactId>hemera-backend</artifactId>
+	<groupId>com.hyperion</groupId>
+	<artifactId>hyperion-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>hemera-backend</name>
-	<description>Hemera CMS Backend</description>
+	<name>hyperion-backend</name>
+	<description>Hyperion CMS Backend</description>
 	<properties>
 		<java.version>17</java.version>
 		<mybatis.version>3.0.3</mybatis.version>
