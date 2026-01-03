@@ -77,6 +77,10 @@ public class PublicApiService {
         return cmsClient.getTagBySlug(slug);
     }
 
+    public List<TagDto> getTagsList() {
+        return cmsClient.getTags();
+    }
+
     @Cacheable(value = "storylines", key = "#slug")
     public StorylineDto getStoryline(String slug) {
         StorylineDto storyline = cmsClient.getStorylineBySlug(slug);
@@ -91,6 +95,14 @@ public class PublicApiService {
     @Cacheable(value = "storylines_list", key = "{#page, #pageSize}")
     public List<StorylineDto> getStorylinesList(int page, int pageSize) {
         return cmsClient.getStorylines(page, pageSize);
+    }
+
+    public Object getStandaloneLayout(String slug) {
+        return cmsClient.getStandaloneLayout(slug);
+    }
+
+    public Object resolveLayout(String type, String targetId) {
+        return cmsClient.resolveLayout(type, targetId);
     }
 
     private ArticleDto enrichArticle(ArticleDto article) {
@@ -132,13 +144,16 @@ public class PublicApiService {
         // Ensure media variants are present
         if (article.getCoverMediaUrl() != null
                 && (article.getMediaVariants() == null || article.getMediaVariants().isEmpty())) {
+            String baseUrl = article.getCoverMediaUrl();
+            String separator = baseUrl.contains("?") ? "&" : "?";
+
             ArticleDto.MediaVariant thumb = new ArticleDto.MediaVariant();
             thumb.setType("thumbnail");
-            thumb.setUrl(article.getCoverMediaUrl() + "?w=300");
+            thumb.setUrl(baseUrl + separator + "w=300");
 
             ArticleDto.MediaVariant hero = new ArticleDto.MediaVariant();
             hero.setType("hero");
-            hero.setUrl(article.getCoverMediaUrl() + "?w=1200");
+            hero.setUrl(baseUrl + separator + "w=1200");
 
             article.setMediaVariants(List.of(thumb, hero));
         }

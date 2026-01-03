@@ -27,7 +27,12 @@ export const PublicApi = {
     getCategory: (slug: string): Promise<Category> => fetchFromGateway(`/public/categories/${slug}`),
     getCategoryArticles: (slug: string, page = 0): Promise<Article[]> => fetchFromGateway(`/public/categories/${slug}/articles?page=${page}`),
     getTag: (slug: string): Promise<Tag> => fetchFromGateway(`/public/tags/${slug}`),
+    getTags: (): Promise<Tag[]> => fetchFromGateway('/public/tags'),
+    getTagArticles: (slug: string, page = 0): Promise<Article[]> => fetchFromGateway(`/public/tags/${slug}/articles?page=${page}`),
     getStorylines: (page = 0): Promise<Storyline[]> => fetchFromGateway(`/public/storylines?page=${page}`),
     getStoryline: (slug: string): Promise<any> => fetchFromGateway(`/public/storylines/${slug}`),
     search: (q: string, page = 0): Promise<Article[]> => fetchFromGateway(`/public/search?q=${q}&page=${page}`),
+    getStandaloneLayout: (slug: string): Promise<any> => fetchFromGateway(`/public/layouts/standalone/${slug}`),
+    resolveLayout: (type: string, targetId?: string): Promise<any> =>
+        fetchFromGateway(`/public/layouts/resolve?type=${type}${targetId ? `&targetId=${targetId}` : ''}`),
 };

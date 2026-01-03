@@ -54,6 +54,24 @@ public class CmsClient {
                 .body(Object.class);
     }
 
+    public Object getStandaloneLayout(String slug) {
+        return restClient.get()
+                .uri("/api/internal/public/layouts/standalone/{slug}", slug)
+                .retrieve()
+                .body(Object.class);
+    }
+
+    public Object resolveLayout(String type, String targetId) {
+        String uri = "/api/internal/public/layouts/resolve?type=" + type;
+        if (targetId != null) {
+            uri += "&targetId=" + targetId;
+        }
+        return restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(Object.class);
+    }
+
     public CategoryDto getCategoryBySlug(String slug) {
         return restClient.get()
                 .uri("/api/internal/public/categories/{slug}", slug)
@@ -80,6 +98,14 @@ public class CmsClient {
                 .uri("/api/internal/public/storylines?page=" + page + "&pageSize=" + pageSize)
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<StorylineDto>>() {
+                });
+    }
+
+    public List<TagDto> getTags() {
+        return restClient.get()
+                .uri("/api/internal/public/tags")
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<TagDto>>() {
                 });
     }
 }

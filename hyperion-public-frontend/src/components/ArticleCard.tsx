@@ -1,23 +1,24 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Clock, ExternalLink } from 'lucide-react';
+import { getImageUrl } from '@/lib/images';
 
-export function ArticleCard({ article }: { article: any }) {
+export function ArticleCard({ article, variant = 'list' }: { article: any, variant?: 'list' | 'grid' }) {
     const formattedDate = article.publishedAt ? format(new Date(article.publishedAt), 'MMM d, yyyy') : '';
 
     return (
         <Link
             href={`/article/${article.slug}`}
-            className="block glass-card rounded-3xl p-6 md:p-10 group relative isolate overflow-hidden"
+            className={`block glass-card rounded-3xl p-6 md:p-10 group relative isolate overflow-hidden ${variant === 'grid' ? 'h-full md:p-6' : ''}`}
         >
             {/* Hover Glow Effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-transparent to-purple-500/0 group-hover:from-indigo-500/10 group-hover:to-purple-500/10 transition-colors duration-700 -z-10" />
 
-            <article className="flex flex-col md:flex-row gap-8 lg:gap-12">
+            <article className={`flex gap-8 lg:gap-12 ${variant === 'grid' ? 'flex-col gap-6' : 'flex-col md:flex-row'}`}>
                 {article.coverMediaUrl && (
-                    <div className="w-full md:w-[280px] h-[200px] shrink-0 rounded-2xl overflow-hidden bg-white/5 relative group-hover:shadow-[0_0_30px_rgba(79,70,229,0.2)] transition-shadow duration-500">
+                    <div className={`shrink-0 rounded-2xl overflow-hidden bg-white/5 relative group-hover:shadow-[0_0_30px_rgba(79,70,229,0.2)] transition-shadow duration-500 ${variant === 'grid' ? 'w-full aspect-video h-auto' : 'w-full md:w-[280px] h-[200px]'}`}>
                         <img
-                            src={article.coverMediaUrl}
+                            src={getImageUrl(article.coverMediaUrl)}
                             alt={article.title}
                             className="w-full h-full object-cover scale-105 group-hover:scale-110 transition duration-700 ease-out"
                         />
@@ -38,7 +39,7 @@ export function ArticleCard({ article }: { article: any }) {
                             )}
                         </div>
 
-                        <h2 className="text-2xl md:text-3xl font-bold leading-tight group-hover:text-indigo-400 transition-colors duration-300">
+                        <h2 className={`font-bold leading-tight group-hover:text-indigo-400 transition-colors duration-300 ${variant === 'grid' ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'}`}>
                             {article.title}
                         </h2>
 
@@ -57,6 +58,14 @@ export function ArticleCard({ article }: { article: any }) {
                                     <Clock size={12} className="text-indigo-500/50" />
                                     <span>{article.readTime} min read</span>
                                 </span>
+                            )}
+                            {article.tags && article.tags.length > 0 && (
+                                <div className="hidden sm:flex items-center space-x-2">
+                                    <span className="text-white/10">•</span>
+                                    {article.tags.slice(0, 2).map((tag: any) => (
+                                        <span key={tag.id} className="text-indigo-400/60 lowercase">#{tag.name}</span>
+                                    ))}
+                                </div>
                             )}
                         </div>
 

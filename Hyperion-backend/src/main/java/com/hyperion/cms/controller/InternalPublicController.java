@@ -19,6 +19,7 @@ public class InternalPublicController {
     private final StorylineMapper storylineMapper;
     private final LayoutMapper layoutMapper;
     private final SlugRedirectMapper slugRedirectMapper;
+    private final MediaAssetMapper mediaAssetMapper;
 
     @GetMapping("/articles/{slug}")
     public Article getArticleBySlug(@PathVariable String slug) {
@@ -45,22 +46,29 @@ public class InternalPublicController {
 
     private void populateCoverMediaUrl(Article article) {
         if (article.getCoverMediaId() != null) {
-            try {
-                java.nio.file.Path storageRoot = java.nio.file.Paths.get("uploads").toAbsolutePath();
-                if (java.nio.file.Files.exists(storageRoot)) {
-                    try (var stream = java.nio.file.Files.list(storageRoot)) {
-                        stream.filter(java.nio.file.Files::isRegularFile)
-                                .filter(path -> {
-                                    String filename = path.getFileName().toString();
-                                    UUID fileId = UUID.nameUUIDFromBytes(filename.getBytes());
-                                    return fileId.equals(article.getCoverMediaId());
-                                })
-                                .findFirst()
-                                .ifPresent(
-                                        path -> article.setCoverMediaUrl("/uploads/" + path.getFileName().toString()));
+            MediaAsset asset = mediaAssetMapper.findById(article.getCoverMediaId());
+            if (asset != null) {
+                article.setCoverMediaUrl(asset.getUrl());
+            } else {
+                // Fallback to local files if not in DB (legacy support)
+                try {
+                    java.nio.file.Path storageRoot = java.nio.file.Paths.get("uploads").toAbsolutePath();
+                    if (java.nio.file.Files.exists(storageRoot)) {
+                        try (var stream = java.nio.file.Files.list(storageRoot)) {
+                            stream.filter(java.nio.file.Files::isRegularFile)
+                                    .filter(path -> {
+                                        String filename = path.getFileName().toString();
+                                        UUID fileId = UUID.nameUUIDFromBytes(filename.getBytes());
+                                        return fileId.equals(article.getCoverMediaId());
+                                    })
+                                    .findFirst()
+                                    .ifPresent(path -> article
+                                            .setCoverMediaUrl("/uploads/" + path.getFileName().toString()));
+                        }
                     }
+                } catch (Exception e) {
+                    // ignore
                 }
-            } catch (Exception e) {
             }
         }
     }
@@ -162,9 +170,24 @@ public class InternalPublicController {
         return layoutMapper.findHomepage();
     }
 
+    @GetMapping("/layouts/standalone/{slug}")
+    public Layout getStandaloneLayout(@PathVariable String slug) {
+        return layoutMapper.findBySlug(slug);
+    }
+
+    @GetMapping("/layouts/resolve")
+    public Layout resolveLayout(@RequestParam String type, @RequestParam(required = false) String targetId) {
+        return layoutMapper.findForTarget(type, targetId);
+    }
+
     @GetMapping("/categories")
     public List<Category> getCategories() {
         return categoryMapper.findAll();
+    }
+
+    @GetMapping("/tags")
+    public List<Tag> getTags() {
+        return tagMapper.findAll();
     }
 
     @GetMapping("/storylines")

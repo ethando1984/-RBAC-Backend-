@@ -19,6 +19,7 @@ com\hyperion\cms\service\PublicContentService.class
 com\hyperion\cms\controller\InternalPublicController.class
 com\hyperion\cms\mapper\AuditLogMapper.class
 com\hyperion\cms\controller\ArticleController.class
+com\hyperion\cms\config\DataInitializer.class
 com\hyperion\cms\model\Storyline$StorylineMedia.class
 com\hyperion\cms\handler\GlobalExceptionHandler$ErrorResponse$ErrorResponseBuilder.class
 com\hyperion\cms\model\Layout$LayoutType.class
@@ -57,6 +58,7 @@ com\hyperion\cms\HyperionBackendApplication.class
 com\hyperion\cms\security\EnhancedIamCenterClient$EvaluateRequest$EvaluateRequestBuilder.class
 com\hyperion\cms\security\EnhancedIamCenterClient$EvaluateRequest.class
 com\hyperion\cms\model\Task.class
+com\hyperion\cms\model\MediaAsset.class
 com\hyperion\cms\controller\SEOController.class
 com\hyperion\cms\handler\UuidTypeHandler.class
 com\hyperion\cms\model\CrawlerJob.class
@@ -70,11 +72,13 @@ com\hyperion\cms\controller\MediaController.class
 com\hyperion\cms\security\IamCenterClient$EvaluateRequest$EvaluateRequestBuilder.class
 com\hyperion\cms\security\EnhancedIamCenterClient$EvaluateResponse.class
 com\hyperion\cms\model\ArticleVersion.class
+com\hyperion\cms\model\MediaAsset$MediaType.class
 com\hyperion\cms\mapper\ArticleMapper.class
 com\hyperion\cms\model\Task$TaskStatus.class
 com\hyperion\cms\security\RequireCategoryPermission.class
 com\hyperion\cms\model\Todo.class
 com\hyperion\cms\service\AuditService.class
+com\hyperion\cms\mapper\MediaAssetMapper.class
 com\hyperion\cms\service\SlugService.class
 com\hyperion\cms\controller\CrawlerController.class
 com\hyperion\cms\mapper\CategoryMapper.class

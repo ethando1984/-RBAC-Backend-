@@ -25,6 +25,7 @@ export interface Storyline {
     updatedAt?: string;
     articleCount?: number;
     articleIds?: string[];
+    articles?: any[];
     media?: StorylineMedia[];
 }
 

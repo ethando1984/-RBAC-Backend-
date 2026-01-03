@@ -1,5 +1,5 @@
 import type { Storyline } from '../../api/storylines';
-import { X, FileText } from 'lucide-react';
+import { X, FileText, Quote } from 'lucide-react';
 
 interface StorylinePreviewModalProps {
     isOpen: boolean;
@@ -94,6 +94,25 @@ export function StorylinePreviewModal({ isOpen, onClose, storyline, blocks }: St
                                         </div>
                                     )}
 
+                                    {block.type === 'quote' && (
+                                        <div className="py-8 px-12 relative bg-amber-50/50 rounded-[2.5rem] border border-amber-100">
+                                            <Quote className="absolute top-6 left-6 h-8 w-8 text-amber-500/20" />
+                                            <div className="relative z-10">
+                                                <p className="text-2xl md:text-3xl font-bold italic text-amber-900 mb-6 leading-relaxed">
+                                                    "{block.content}"
+                                                </p>
+                                                {(block.settings?.author || block.settings?.subtitle) && (
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className="h-px w-8 bg-amber-500/30" />
+                                                        <span className="text-sm font-black uppercase tracking-widest text-amber-600">
+                                                            {block.settings.author || block.settings.subtitle}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {block.type === 'article' && block.content && (
                                         <div className="bg-white p-8 rounded-[2rem] border border-gray-100 shadow-xl shadow-gray-100 flex items-start gap-6 group hover:translate-y-[-4px] transition-all duration-300">
                                             <div className="h-16 w-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
@@ -112,6 +131,36 @@ export function StorylinePreviewModal({ isOpen, onClose, storyline, blocks }: St
                                     )}
                                 </div>
                             ))}
+
+                            {/* Timeline Preview */}
+                            {storyline.articles && storyline.articles.length > 0 && (
+                                <div className="mt-32 pt-20 border-t-2 border-dashed border-gray-100">
+                                    <div className="flex items-center space-x-6 mb-16 justify-center">
+                                        <div className="h-px w-12 bg-gray-300" />
+                                        <h2 className="text-[10px] font-black uppercase tracking-[0.5em] text-gray-400 whitespace-nowrap">
+                                            Timeline of Events
+                                        </h2>
+                                        <div className="h-px w-12 bg-gray-300" />
+                                    </div>
+
+                                    <div className="relative border-l-2 border-gray-100 ml-10 pl-16 space-y-16">
+                                        {storyline.articles.map((article: any, index: number) => (
+                                            <div key={article.id} className="relative">
+                                                <div className="absolute -left-[71px] top-0 w-[14px] h-[14px] rounded-full bg-white border-[3px] border-blue-600" />
+                                                <div className="mb-2">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">
+                                                        Chapter {index + 1}
+                                                    </span>
+                                                </div>
+                                                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                                                    <h4 className="font-bold text-gray-900">{article.title}</h4>
+                                                    <p className="text-sm text-gray-500 line-clamp-1 mt-1 font-medium">{article.excerpt}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {blocks.length === 0 && (
                                 <div className="text-center py-20 bg-gray-50/50 rounded-[3rem] border-4 border-dashed border-gray-100">

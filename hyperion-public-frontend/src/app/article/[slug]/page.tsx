@@ -1,6 +1,8 @@
 import { PublicApi } from '@/lib/api';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { format } from 'date-fns';
+import { getImageUrl } from '@/lib/images';
 
 export default async function ArticleDetail({ params }: { params: { slug: string } }) {
     let article;
@@ -47,7 +49,7 @@ export default async function ArticleDetail({ params }: { params: { slug: string
                 {article.coverMediaUrl && (
                     <div className="aspect-video rounded-3xl overflow-hidden bg-white/5">
                         <img
-                            src={article.coverMediaUrl}
+                            src={getImageUrl(article.coverMediaUrl)}
                             alt={article.title}
                             className="w-full h-full object-cover"
                         />
@@ -63,9 +65,13 @@ export default async function ArticleDetail({ params }: { params: { slug: string
             <footer className="mt-16 pt-8 border-t border-white/10">
                 <div className="flex flex-wrap gap-2">
                     {article.tags?.map((tag: any) => (
-                        <span key={tag.slug} className="px-4 py-2 rounded-full bg-white/5 text-sm hover:bg-white/10 transition cursor-pointer">
+                        <Link
+                            key={tag.slug}
+                            href={`/tags/${tag.slug}`}
+                            className="px-4 py-2 rounded-full bg-white/5 text-sm hover:bg-white/10 transition cursor-pointer"
+                        >
                             #{tag.name}
-                        </span>
+                        </Link>
                     ))}
                 </div>
             </footer>

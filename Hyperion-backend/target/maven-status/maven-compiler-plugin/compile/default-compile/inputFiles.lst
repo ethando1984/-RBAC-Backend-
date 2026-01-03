@@ -1,6 +1,8 @@
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\CrawlerResult.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\config\MtlsProperties.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\MediaAsset.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\service\PublicContentService.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\MediaAssetMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\PermissionAspect.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\InternalPublicController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\ArticleMapper.java
@@ -25,6 +27,7 @@ F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\Artic
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\Storyline.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\DecisionReason.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\TaskController.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\config\DataInitializer.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\DashboardController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\RequirePermission.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\LayoutMapper.java

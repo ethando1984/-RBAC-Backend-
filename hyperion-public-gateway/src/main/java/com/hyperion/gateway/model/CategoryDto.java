@@ -11,6 +11,7 @@ public class CategoryDto {
     private String name;
     private String slug;
     private String description;
+    private String positionConfigJson;
     private String redirectTo;
     private String canonicalSlug;
 }

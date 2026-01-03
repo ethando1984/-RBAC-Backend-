@@ -83,6 +83,11 @@ public class PublicController {
         return ResponseEntity.ok(publicApiService.getArticles(page, pageSize, null, slug));
     }
 
+    @GetMapping("/tags")
+    public ResponseEntity<List<TagDto>> getTags() {
+        return ResponseEntity.ok(publicApiService.getTagsList());
+    }
+
     @GetMapping("/storylines/{slug}")
     public ResponseEntity<?> getStoryline(@PathVariable String slug) {
         StorylineDto storyline = publicApiService.getStoryline(slug);
@@ -106,6 +111,18 @@ public class PublicController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
         return ResponseEntity.ok(publicApiService.getStorylinesList(page, pageSize));
+    }
+
+    @GetMapping("/layouts/standalone/{slug}")
+    public ResponseEntity<?> getStandaloneLayout(@PathVariable String slug) {
+        return ResponseEntity.ok(publicApiService.getStandaloneLayout(slug));
+    }
+
+    @GetMapping("/layouts/resolve")
+    public ResponseEntity<?> resolveLayout(
+            @RequestParam String type,
+            @RequestParam(required = false) String targetId) {
+        return ResponseEntity.ok(publicApiService.resolveLayout(type, targetId));
     }
 
     @GetMapping("/search")

@@ -10,6 +10,7 @@ export interface Category {
     name: string;
     slug: string;
     description?: string;
+    positionConfigJson?: string;
     redirectTo?: string;
     canonicalSlug?: string;
 }

@@ -1,4 +1,4 @@
-import { Home, Compass, Bookmark, Settings, Search, Bell, User, Newspaper, BookOpen, Layers } from 'lucide-react';
+import { Home, Compass, Bookmark, Settings, Search, Bell, User, Newspaper, BookOpen, Layers, Hash } from 'lucide-react';
 import Link from 'next/link';
 
 import { PublicApi } from '@/lib/api';
@@ -34,6 +34,7 @@ export async function Layout({ children }: { children: React.ReactNode }) {
                     <NavItem icon={<Home />} label="Home" href="/" />
                     <NavItem icon={<Newspaper />} label="Articles" href="/articles" />
                     <NavItem icon={<BookOpen />} label="Storylines" href="/storylines" />
+                    <NavItem icon={<Hash />} label="Tags" href="/tags" />
 
                     {tree.length > 0 && (
                         <div className="pt-6">
