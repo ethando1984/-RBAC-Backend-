@@ -3,8 +3,6 @@ security:
     secret-key: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
 
 spring:
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
   application:
     name: Hyperion-backend
   datasource:
@@ -28,8 +26,20 @@ spring:
           jws-algorithms: HS256
   data:
     redis:
-      host: localhost
-      port: 6379
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300000  # 5 minutes default
+      cache-null-values: false
   servlet:
     multipart:
       max-file-size: 500MB
@@ -56,7 +66,45 @@ logging:
   level:
     com.hyperion.cms: DEBUG
     org.springframework.security: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"
 
 hyperion:
   cors:
     allowed-origins: http://localhost:5173
+  mtls:
+    enabled: ${MTLS_ENABLED:false}
+    client-cert-path: ${MTLS_CLIENT_CERT_PATH:/etc/hyperion/certs/client.jks}
+    client-key-path: ${MTLS_CLIENT_KEY_PATH:/etc/hyperion/certs/client-key.pem}
+    client-cert-password: ${MTLS_CLIENT_CERT_PASSWORD:changeit}
+    trusted-ca-path: ${MTLS_TRUSTED_CA_PATH:/etc/hyperion/certs/ca-trust.jks}
+    service-name: hyperion-cms
+    service-token: ${IAM_SERVICE_TOKEN:dev-service-token}
+    iam-center-url: ${IAM_CENTER_URL:https://iam-center.internal:8443}
+    connection-timeout: 5000
+    read-timeout: 10000
+
+# Resilience4j Circuit Breaker & Retry Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      iamCenter:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 30s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  retry:
+    instances:
+      iamCenter:
+        maxAttempts: 3
+        waitDuration: 500ms
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2
+        retryExceptions:
+          - java.io.IOException
+          - org.springframework.web.client.ResourceAccessException
+
