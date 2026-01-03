@@ -28,13 +28,21 @@ public class StorylineController {
     }
 
     @GetMapping
-    public List<Storyline> list(@RequestParam(required = false) String status,
+    public com.hyperion.cms.dto.PagedResponse<Storyline> list(@RequestParam(required = false) String status,
             @RequestParam(defaultValue = "") String search,
             @RequestParam(defaultValue = "10") int limit, @RequestParam(defaultValue = "0") int offset) {
         if (!permissionService.can("storylines", "read")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing storylines:read permission");
         }
-        return storylineMapper.findAll(status, search, limit, offset);
+        List<Storyline> items = storylineMapper.findAll(status, search, limit, offset);
+        long total = storylineMapper.countAll(status, search);
+
+        return com.hyperion.cms.dto.PagedResponse.<Storyline>builder()
+                .items(items)
+                .total(total)
+                .page(offset / limit + 1)
+                .size(limit)
+                .build();
     }
 
     @GetMapping("/{id}")

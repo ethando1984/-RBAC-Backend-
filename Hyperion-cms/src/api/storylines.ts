@@ -29,9 +29,22 @@ export interface Storyline {
     media?: StorylineMedia[];
 }
 
+export interface PagedResponse<T> {
+    items: T[];
+    total: number;
+    page: number;
+    size: number;
+}
+
 export const storylineApi = {
-    list: (params?: { search?: string, page?: number, size?: number }) =>
-        hemeraApi.get<Storyline[]>('/storylines', { params }).then(res => res.data),
+    list: (params?: { search?: string, status?: string, page?: number, size?: number }) => {
+        const queryParams = {
+            ...params,
+            limit: params?.size || 10,
+            offset: ((params?.page || 1) - 1) * (params?.size || 10)
+        };
+        return hemeraApi.get<PagedResponse<Storyline>>('/storylines', { params: queryParams }).then(res => res.data);
+    },
     get: (id: string) => hemeraApi.get<Storyline>(`/storylines/${id}`).then(res => res.data),
     create: (data: Storyline) => hemeraApi.post<Storyline>('/storylines', data).then(res => res.data),
     update: (id: string, data: Storyline) => hemeraApi.put<Storyline>(`/storylines/${id}`, data).then(res => res.data),

@@ -38,6 +38,7 @@ F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\config\Data
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\DashboardController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\RequirePermission.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\LayoutMapper.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\dto\PagedResponse.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\PublicLayoutController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\royalty\mapper\RoyaltyRecordMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\royalty\model\RoyaltyMultiplier.java

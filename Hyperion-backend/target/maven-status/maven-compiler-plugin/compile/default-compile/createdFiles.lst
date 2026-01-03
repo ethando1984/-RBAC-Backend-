@@ -60,6 +60,7 @@ com\hyperion\cms\security\PermissionDecision$PermissionDecisionBuilder.class
 com\hyperion\cms\controller\AuthController.class
 com\hyperion\cms\model\Layout.class
 com\hyperion\cms\royalty\dto\RejectRequest.class
+com\hyperion\cms\dto\PagedResponse$PagedResponseBuilder.class
 com\hyperion\cms\dto\PublicArticleDTO.class
 com\hyperion\cms\royalty\model\RoyaltyRecord$RoyaltyStatus.class
 com\hyperion\cms\mapper\TodoMapper.class
@@ -85,6 +86,7 @@ com\hyperion\cms\controller\RoyaltyController.class
 com\hyperion\cms\royalty\model\RoyaltyOverridePolicy.class
 com\hyperion\cms\mapper\ArticleVersionMapper.class
 com\hyperion\cms\security\DecisionReason.class
+com\hyperion\cms\dto\PagedResponse.class
 com\hyperion\cms\royalty\model\RoyaltyRecord.class
 com\hyperion\cms\security\IamCenterClient$EvaluateRequest.class
 com\hyperion\cms\controller\ToolController.class

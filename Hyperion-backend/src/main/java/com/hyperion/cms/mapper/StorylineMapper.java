@@ -61,6 +61,16 @@ public interface StorylineMapper {
         List<Storyline> findAll(@Param("status") String status, @Param("search") String search,
                         @Param("limit") int limit, @Param("offset") int offset);
 
+        @Select("<script>" +
+                        "SELECT COUNT(*) FROM storylines s " +
+                        "<where>" +
+                        "<if test='status != null and status != \"\"'> AND s.status = #{status}</if>" +
+                        "<if test='search != null and search != \"\"'> AND (LOWER(s.title) LIKE LOWER(CONCAT('%', #{search}, '%')))</if>"
+                        +
+                        "</where>" +
+                        "</script>")
+        long countAll(@Param("status") String status, @Param("search") String search);
+
         @Insert("INSERT INTO storylines (id, title, slug, description, status, contents_json, layout_json, seo_title, seo_description, created_by_user_id, created_by_email, created_at, updated_at) "
                         +
                         "VALUES (#{id}, #{title}, #{slug}, #{description}, #{status}, #{contentsJson}, #{layoutJson}, #{seoTitle}, #{seoDescription}, #{createdByUserId}, #{createdByEmail}, #{createdAt}, #{updatedAt})")
