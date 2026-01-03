@@ -23,12 +23,18 @@ class UserServiceImplTest {
     @Mock
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Mock
+    private com.aitech.rbac.security.PermissionService permissionService;
+
+    @Mock
+    private com.aitech.rbac.service.UserAccessService userAccessService;
+
     private UserServiceImpl service;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        service = new UserServiceImpl(mapper, passwordEncoder);
+        service = new UserServiceImpl(mapper, passwordEncoder, permissionService, userAccessService);
     }
 
     @Test

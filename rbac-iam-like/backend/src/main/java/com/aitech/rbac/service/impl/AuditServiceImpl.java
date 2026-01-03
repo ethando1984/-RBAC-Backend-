@@ -19,12 +19,11 @@ import java.util.UUID;
 public class AuditServiceImpl implements AuditService {
 
     private final AuditLogMapper auditLogMapper;
-    private final UserService userService; // To resolve user details if needed
+    // Removed UserService to break circular dependency
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AuditServiceImpl(AuditLogMapper auditLogMapper, UserService userService) {
+    public AuditServiceImpl(AuditLogMapper auditLogMapper) {
         this.auditLogMapper = auditLogMapper;
-        this.userService = userService;
     }
 
     @Override
@@ -51,15 +50,21 @@ public class AuditServiceImpl implements AuditService {
         // Capture Actor
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
-            String username = auth.getName();
-            log.setActorEmail(username); // Assuming username is email or can lookup
-            try {
-                User user = userService.findByUsername(username);
-                if (user != null) {
-                    log.setActorUserId(user.getUserId());
-                    log.setActorEmail(user.getEmail());
+
+            if (auth instanceof org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken jwtAuth) {
+                String sub = jwtAuth.getToken().getSubject();
+                String email = (String) jwtAuth.getToken().getClaims().get("email");
+
+                if (sub != null) {
+                    try {
+                        log.setActorUserId(UUID.fromString(sub));
+                    } catch (IllegalArgumentException e) {
+                        // ignore
+                    }
                 }
-            } catch (Exception ignored) {
+                log.setActorEmail(email != null ? email : auth.getName());
+            } else {
+                log.setActorEmail(auth.getName());
             }
         } else {
             log.setActorEmail("SYSTEM");
@@ -69,6 +74,28 @@ public class AuditServiceImpl implements AuditService {
         log.setIpAddress("127.0.0.1");
 
         auditLogMapper.insert(log);
+    }
+
+    @Override
+    public void logDecision(com.aitech.rbac.security.PermissionDecision decision) {
+        boolean isSensitive = isSensitiveAction(decision.getAction());
+        if (!decision.isAllowed() || isSensitive) {
+            String details = String.format("Namespace: %s, Action: %s, Category: %s, Source: %s, Reason: %s",
+                    decision.getNamespace(), decision.getAction(), decision.getCategoryId(),
+                    decision.getSource(), decision.getReasonCode());
+
+            logAction("AUTH_DECISION", "PERMISSION",
+                    decision.getResourceId() != null ? decision.getResourceId() : "N/A",
+                    null, details, null, null);
+        }
+    }
+
+    private boolean isSensitiveAction(String action) {
+        if (action == null)
+            return false;
+        String lower = action.toLowerCase();
+        return lower.contains("publish") || lower.contains("delete") || lower.contains("admin")
+                || lower.contains("write");
     }
 
     @Override

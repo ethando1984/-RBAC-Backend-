@@ -15,9 +15,16 @@ public class UserServiceImpl implements UserService {
     private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
 
-    public UserServiceImpl(UserMapper mapper, PasswordEncoder passwordEncoder) {
+    private final com.aitech.rbac.security.PermissionService permissionService;
+    private final com.aitech.rbac.service.UserAccessService userAccessService;
+
+    public UserServiceImpl(UserMapper mapper, PasswordEncoder passwordEncoder,
+            @org.springframework.beans.factory.annotation.Qualifier("iamPermissionService") com.aitech.rbac.security.PermissionService permissionService,
+            com.aitech.rbac.service.UserAccessService userAccessService) {
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
+        this.permissionService = permissionService;
+        this.userAccessService = userAccessService;
     }
 
     public List<User> getAll() {
@@ -60,6 +67,9 @@ public class UserServiceImpl implements UserService {
     }
 
     public void update(User entity) {
+        // Privilege Check
+        checkPrivilegeModification(entity.getUserId());
+
         entity.setUpdatedAt(java.time.LocalDateTime.now());
 
         // Handle password update: only encode if a new password is provided and it's
@@ -107,6 +117,64 @@ public class UserServiceImpl implements UserService {
     }
 
     public void delete(UUID id) {
+        checkPrivilegeModification(id);
         mapper.delete(id);
+    }
+
+    private void checkPrivilegeModification(UUID targetUserId) {
+        String currentUserIdStr = permissionService.getCurrentUserId();
+
+        // Skip if system or unauthenticated (though robust systems should require auth)
+        if (currentUserIdStr == null || "system".equals(currentUserIdStr) || "anonymousUser".equals(currentUserIdStr)) {
+            return;
+        }
+
+        UUID currentUserId;
+        try {
+            currentUserId = UUID.fromString(currentUserIdStr);
+        } catch (IllegalArgumentException e) {
+            // Maybe a system token or invalid format
+            return;
+        }
+
+        // Allow self-update
+        if (targetUserId.equals(currentUserId)) {
+            return;
+        }
+
+        // Check if target has Admin privileges
+        if (hasAdminRole(targetUserId)) {
+            // Ensure current user also has Admin privileges
+            if (!hasAdminRole(currentUserId)) {
+                throw new com.aitech.rbac.security.PermissionDeniedException(
+                        com.aitech.rbac.security.PermissionDecision.builder()
+                                .allowed(false)
+                                .reasonCode(com.aitech.rbac.security.DecisionReason.DENIED_BY_DEFAULT)
+                                .source("PRIVILEGE_CHECK")
+                                .action("modify_admin")
+                                .namespace("users")
+                                .resourceId(targetUserId.toString())
+                                .build());
+            }
+        }
+    }
+
+    private boolean hasAdminRole(UUID userId) {
+        List<com.aitech.rbac.dto.UserAccessDTO> accessList = userAccessService.getUserAccess(userId);
+        if (accessList == null || accessList.isEmpty())
+            return false;
+
+        // Check roles in the flattening
+        for (com.aitech.rbac.dto.UserAccessDTO dto : accessList) {
+            if (dto.getRoles() != null) {
+                for (com.aitech.rbac.dto.UserAccessDTO.RoleDTO role : dto.getRoles()) {
+                    if ("Admin".equalsIgnoreCase(role.getRoleName()) ||
+                            "SuperAdmin".equalsIgnoreCase(role.getRoleName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

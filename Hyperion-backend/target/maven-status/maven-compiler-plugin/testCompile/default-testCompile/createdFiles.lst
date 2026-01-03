@@ -1,2 +1,2 @@
-com\hemera\cms\HemeraBackendApplicationTests.class
-com\hemera\cms\security\PermissionServiceTest.class
+com\hyperion\cms\HyperionBackendApplicationTests.class
+com\hyperion\cms\security\PermissionServiceTest.class

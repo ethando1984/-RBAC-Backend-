@@ -1,0 +1,5 @@
+# Created at 2026-01-03T14:10:18.721
+Boot Manifest-JAR contains absolute paths in classpath 'F:\java\rbac-backend\Hyperion-backend\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+

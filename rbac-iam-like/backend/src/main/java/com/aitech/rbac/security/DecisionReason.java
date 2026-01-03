@@ -1,0 +1,12 @@
+package com.aitech.rbac.security;
+
+public enum DecisionReason {
+    ALLOWED_BY_JWT,
+    ALLOWED_BY_REMOTE_IAM,
+    DENIED_BY_DEFAULT,
+    DENIED_BY_EXPLICIT_DENY,
+    DENIED_CATEGORY_SCOPE,
+    DENIED_BY_REMOTE_IAM,
+    INVALID_PERMISSION_FORMAT,
+    ERROR_REMOTE_IAM
+}

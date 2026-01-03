@@ -1,77 +1,159 @@
 package com.hyperion.cms.security;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.Authentication;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class PermissionServiceTest {
 
-    @Test
-    void can_ReturnsTrue_WhenPermissionInClaims() {
-        PermissionService service = new PermissionService();
-        setupMockSecurityContext(List.of("articles:read"));
+    @Mock
+    private IamCenterClient iamCenterClient;
 
-        assertTrue(service.can("articles", "read"));
-        assertFalse(service.can("articles", "write"));
+    @Mock
+    private SecurityContext securityContext;
+
+    private PermissionServiceImpl permissionService;
+
+    @BeforeEach
+    void setUp() {
+        permissionService = new PermissionServiceImpl(iamCenterClient);
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
-    void canInCategory_ReturnsTrue_WhenScopedAllow() {
-        PermissionService service = new PermissionService();
+    void can_ReturnsTrue_WhenExactPermissionInJwt() {
+        setupMockJwt(Map.of("permissions", List.of("articles:read")), "user-1");
+
+        assertTrue(permissionService.can("articles", "read"));
+        PermissionDecision decision = permissionService.evaluate("articles", "read", null, null);
+        assertTrue(decision.isAllowed());
+        assertEquals(DecisionReason.ALLOWED_BY_JWT, decision.getReasonCode());
+    }
+
+    @Test
+    void can_ReturnsTrue_WhenWildcardInJwt() {
+        setupMockJwt(Map.of("permissions", List.of("articles:*")), "user-1");
+
+        assertTrue(permissionService.can("articles", "publish"));
+        assertTrue(permissionService.can("articles", "delete"));
+    }
+
+    @Test
+    void can_ReturnsTrue_WhenGlobalWildcardInJwt() {
+        setupMockJwt(Map.of("permissions", List.of("*:*")), "user-1");
+
+        assertTrue(permissionService.can("iam", "admin"));
+        assertTrue(permissionService.can("orders", "write"));
+    }
+
+    @Test
+    void can_ReturnsFalse_WhenNoMatchInJwtAndNoRemote() {
+        setupMockJwt(Map.of("permissions", List.of("articles:read")), "user-1");
+
+        IamCenterClient.EvaluateResponse response = new IamCenterClient.EvaluateResponse();
+        response.setAllowed(false);
+        when(iamCenterClient.evaluate(any(), any(), any())).thenReturn(response);
+
+        assertFalse(permissionService.can("articles", "write"));
+    }
+
+    @Test
+    void canInCategory_ReturnsTrue_WhenCategoryScopedAllowInJwt() {
         UUID catId = UUID.randomUUID();
+        Map<String, Object> scope = Map.of(
+                "categoryId", catId.toString(),
+                "allow", List.of("articles:publish"));
+        setupMockJwt(Map.of("categoryScopes", List.of(scope)), "user-1");
 
-        // Mock categoryScopes claim
-        List<Map<String, Object>> scopes = List.of(
-                Map.of(
+        assertTrue(permissionService.canInCategory(catId, "articles", "publish"));
+    }
+
+    @Test
+    void canInCategory_ReturnsFalse_WhenCategoryScopedExplicitDenyInJwt() {
+        UUID catId = UUID.randomUUID();
+        setupMockJwt(Map.of(
+                "permissions", List.of("articles:*"),
+                "categoryScopes", List.of(Map.of(
                         "categoryId", catId.toString(),
-                        "allow", List.of("articles:publish")));
+                        "deny", List.of("articles:delete")))),
+                "user-1");
 
-        setupMockSecurityContextWithScopes(scopes);
-
-        // Global check fails (no global perm)
-        assertFalse(service.can("articles", "publish"));
-
-        // Category check succeeds
-        assertTrue(service.canInCategory(catId, "articles", "publish"));
-
-        // Wrong category fails
-        assertFalse(service.canInCategory(UUID.randomUUID(), "articles", "publish"));
+        assertFalse(permissionService.canInCategory(catId, "articles", "delete"));
+        assertTrue(permissionService.canInCategory(catId, "articles", "write"));
     }
 
-    private void setupMockSecurityContext(List<String> permissions) {
-        Jwt jwt = createJwt(Map.of("permissions", permissions));
+    @Test
+    void evaluate_ReturnsRemoteIamDecision_WhenJwtMissing() {
+        setupMockJwt(Map.of("permissions", Collections.emptyList()), "user-1");
 
-        SecurityContext context = mock(SecurityContext.class);
-        when(context.getAuthentication()).thenReturn(new JwtAuthenticationToken(jwt));
-        SecurityContextHolder.setContext(context);
+        IamCenterClient.EvaluateResponse remoteResponse = new IamCenterClient.EvaluateResponse();
+        remoteResponse.setAllowed(true);
+        remoteResponse.setMatchedPolicy("Policy-123");
+        when(iamCenterClient.evaluate(any(), any(), any())).thenReturn(remoteResponse);
+
+        PermissionDecision decision = permissionService.evaluate("articles", "write", null, null);
+
+        assertTrue(decision.isAllowed());
+        assertEquals(DecisionReason.ALLOWED_BY_REMOTE_IAM, decision.getReasonCode());
+        assertEquals("Policy-123", decision.getMatchedPolicy());
     }
 
-    private void setupMockSecurityContextWithScopes(List<Map<String, Object>> scopes) {
-        Jwt jwt = createJwt(Map.of("categoryScopes", scopes));
+    @Test
+    void evaluate_ReturnsDeniedByRemote_WhenRemoteIamDenies() {
+        setupMockJwt(Map.of("permissions", Collections.emptyList()), "user-1");
 
-        SecurityContext context = mock(SecurityContext.class);
-        when(context.getAuthentication()).thenReturn(new JwtAuthenticationToken(jwt));
-        SecurityContextHolder.setContext(context);
+        IamCenterClient.EvaluateResponse remoteResponse = new IamCenterClient.EvaluateResponse();
+        remoteResponse.setAllowed(false);
+        remoteResponse.setReason("DENIED_BY_POLICY");
+        when(iamCenterClient.evaluate(any(), any(), any())).thenReturn(remoteResponse);
+
+        PermissionDecision decision = permissionService.evaluate("articles", "write", null, null);
+
+        assertFalse(decision.isAllowed());
+        assertEquals(DecisionReason.DENIED_BY_REMOTE_IAM, decision.getReasonCode());
     }
 
-    private Jwt createJwt(Map<String, Object> claims) {
-        return new Jwt(
-                "token",
-                java.time.Instant.now(),
-                java.time.Instant.now().plusSeconds(3600),
-                Map.of("alg", "none"),
-                claims);
+    @Test
+    void can_RejectInvalidPermissionFormat() {
+        assertFalse(permissionService.can("invalidFormat"));
+        assertFalse(permissionService.can(null));
+    }
+
+    @Test
+    void evaluate_ReturnsErrorRemoteIam_WhenRemoteCallFails() {
+        setupMockJwt(Map.of("permissions", Collections.emptyList()), "user-1");
+
+        when(iamCenterClient.evaluate(any(), any(), any())).thenThrow(new RuntimeException("API Down"));
+
+        PermissionDecision decision = permissionService.evaluate("articles", "write", null, null);
+
+        assertFalse(decision.isAllowed());
+        assertEquals(DecisionReason.ERROR_REMOTE_IAM, decision.getReasonCode());
+    }
+
+    private void setupMockJwt(Map<String, Object> claims, String subject) {
+        Jwt jwt = new Jwt("token", java.time.Instant.now(), java.time.Instant.now().plusSeconds(3600),
+                Map.of("alg", "none"), claims);
+        JwtAuthenticationToken auth = new JwtAuthenticationToken(jwt);
+        when(securityContext.getAuthentication()).thenReturn(auth);
     }
 }

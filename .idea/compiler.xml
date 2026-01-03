@@ -7,13 +7,17 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="rbac-backend" />
+        <module name="rbac-full-backend" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="rbac-backend" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="rbac-backend" options="-parameters" />
+      <module name="rbac-full-backend" options="-parameters" />
     </option>
   </component>
 </project>

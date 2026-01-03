@@ -16,6 +16,8 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@org.springframework.cache.annotation.EnableCaching
+@org.springframework.scheduling.annotation.EnableAsync
 public class SecurityConfig {
 
     @org.springframework.beans.factory.annotation.Value("${security.jwt.secret-key:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}")
@@ -27,7 +29,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/api/public/**", "/public/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
@@ -73,5 +75,15 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public org.springframework.cache.CacheManager cacheManager() {
+        org.springframework.cache.caffeine.CaffeineCacheManager cacheManager = new org.springframework.cache.caffeine.CaffeineCacheManager(
+                "iamRemoteDecisions");
+        cacheManager.setCaffeine(com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
+                .expireAfterWrite(10, java.util.concurrent.TimeUnit.MINUTES)
+                .maximumSize(1000));
+        return cacheManager;
     }
 }

@@ -17,15 +17,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+@org.springframework.cache.annotation.EnableCaching
+@org.springframework.scheduling.annotation.EnableAsync
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, UserDetailsService userDetailsService,
-            PasswordEncoder passwordEncoder) {
-        this.jwtAuthFilter = jwtAuthFilter;
+    @org.springframework.beans.factory.annotation.Value("${security.jwt.secret-key}")
+    private String jwtSecret;
+
+    public SecurityConfig(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.passwordEncoder = passwordEncoder;
     }
@@ -38,14 +41,35 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html",
                                 "/swagger-resources/**", "/webjars/**",
-                                "/h2-console/**", "/api/namespaces/**", "/api/action-types/**")
+                                "/h2-console/**", "/api/namespaces/**", "/api/action-types/**", "/public/**",
+                                "/api/public/**")
                         .permitAll()
                         .anyRequest().authenticated())
                 .headers(headers -> headers.frameOptions(frame -> frame.disable())) // For H2 console
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                // // Replaced by oauth2ResourceServer
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt
+                        .decoder(jwtDecoder())))
                 .build();
+    }
+
+    @Bean
+    public org.springframework.security.oauth2.jwt.JwtDecoder jwtDecoder() {
+        byte[] keyBytes = jwtSecret.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        javax.crypto.spec.SecretKeySpec secretKey = new javax.crypto.spec.SecretKeySpec(keyBytes, "HmacSHA256");
+        return org.springframework.security.oauth2.jwt.NimbusJwtDecoder.withSecretKey(secretKey).build();
+    }
+
+    @Bean
+    public org.springframework.cache.CacheManager cacheManager() {
+        org.springframework.cache.caffeine.CaffeineCacheManager cacheManager = new org.springframework.cache.caffeine.CaffeineCacheManager(
+                "iamRemoteDecisions");
+        cacheManager.setCaffeine(com.github.benmanes.caffeine.cache.Caffeine.newBuilder()
+                .expireAfterWrite(10, java.util.concurrent.TimeUnit.MINUTES)
+                .maximumSize(1000));
+        return cacheManager;
     }
 
     @Bean

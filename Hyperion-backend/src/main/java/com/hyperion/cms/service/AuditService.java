@@ -50,4 +50,26 @@ public class AuditService {
             e.printStackTrace();
         }
     }
+
+    @Async
+    public void logDecision(com.hyperion.cms.security.PermissionDecision decision) {
+        boolean isSensitive = isSensitiveAction(decision.getAction());
+        if (!decision.isAllowed() || isSensitive) {
+            String details = String.format("Namespace: %s, Action: %s, Category: %s, Source: %s, Reason: %s",
+                    decision.getNamespace(), decision.getAction(), decision.getCategoryId(),
+                    decision.getSource(), decision.getReasonCode());
+
+            log("AUTH_DECISION", "PERMISSION",
+                    decision.getResourceId() != null ? decision.getResourceId() : "N/A",
+                    null, details);
+        }
+    }
+
+    private boolean isSensitiveAction(String action) {
+        if (action == null)
+            return false;
+        String lower = action.toLowerCase();
+        return lower.contains("publish") || lower.contains("delete") || lower.contains("admin")
+                || lower.contains("write");
+    }
 }
