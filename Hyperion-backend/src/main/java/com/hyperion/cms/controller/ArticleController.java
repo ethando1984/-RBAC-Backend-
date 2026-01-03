@@ -7,6 +7,10 @@ import com.hyperion.cms.mapper.ArticleMapper;
 import com.hyperion.cms.security.PermissionService;
 import com.hyperion.cms.security.RequirePermission;
 import com.hyperion.cms.security.RequireCategoryPermission;
+import com.hyperion.cms.model.ArticleVersion;
+import com.hyperion.cms.mapper.ArticleVersionMapper;
+import com.hyperion.cms.service.AuditService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,14 +26,21 @@ import java.util.UUID;
 public class ArticleController {
 
     private final ArticleMapper articleMapper;
+    private final ArticleVersionMapper versionMapper;
     private final TagMapper tagMapper;
     private final PermissionService permissionService;
+    private final AuditService auditService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
-    public ArticleController(ArticleMapper articleMapper, TagMapper tagMapper,
-            PermissionService permissionService) {
+    public ArticleController(ArticleMapper articleMapper, ArticleVersionMapper versionMapper, TagMapper tagMapper,
+            PermissionService permissionService, AuditService auditService,
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
         this.articleMapper = articleMapper;
+        this.versionMapper = versionMapper;
         this.tagMapper = tagMapper;
         this.permissionService = permissionService;
+        this.auditService = auditService;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -86,6 +97,7 @@ public class ArticleController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
 
+        Article old = cloneArticle(existing);
         // Detect content changes for workflow
         String oldTitle = existing.getTitle();
         boolean contentChanged = false;
@@ -124,6 +136,12 @@ public class ArticleController {
         }
 
         articleMapper.update(existing);
+
+        // create version if changed
+        if (contentChanged) {
+            createVersion(existing, "Updated content");
+            auditService.log("UPDATE", "ARTICLE", existing.getId().toString(), old, existing);
+        }
 
         // Sync Categories
         existing.setCategoryIds(article.getCategoryIds());
@@ -169,53 +187,154 @@ public class ArticleController {
         }
     }
 
-    // Workflow Action: Submit for Editorial
-    @PostMapping("/{id}/submit-editorial")
-    @RequireCategoryPermission(namespace = "articles", action = "write", categoryIdParam = "#categoryId")
-    public ResponseEntity<Void> submitEditorial(@PathVariable UUID id,
+    // Workflow Action: Submit for Publishing
+    @PostMapping("/{id}/submit-publishing")
+    @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
+    public ResponseEntity<Void> submitPublishing(@PathVariable UUID id,
             @RequestParam(required = false) UUID categoryId) {
-
-        Article article = articleMapper.findById(id);
-        if (article == null)
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
-        article.setStatus(Article.ArticleStatus.PENDING_EDITORIAL);
+        Article article = getAndCheck(id);
+        Article old = cloneArticle(article);
+        article.setStatus(Article.ArticleStatus.PENDING_PUBLISHING);
         article.setUpdatedAt(LocalDateTime.now());
         articleMapper.update(article);
-
+        createVersion(article, "Submitted for publishing");
+        auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
         return ResponseEntity.ok().build();
     }
 
-    // Workflow Action: Publish
-    @PostMapping("/{id}/publish")
+    // Workflow Action: Publish Now
+    @PostMapping("/{id}/publish-now")
     @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
-    public ResponseEntity<Void> publish(@PathVariable UUID id, @RequestParam(required = false) UUID categoryId) {
-
-        Article article = articleMapper.findById(id);
-        if (article == null)
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
+    public ResponseEntity<Void> publishNow(@PathVariable UUID id, @RequestParam(required = false) UUID categoryId) {
+        Article article = getAndCheck(id);
+        Article old = cloneArticle(article);
         article.setStatus(Article.ArticleStatus.PUBLISHED);
         article.setPublishedAt(LocalDateTime.now());
         article.setUpdatedAt(LocalDateTime.now());
         articleMapper.update(article);
+        createVersion(article, "Published now");
+        auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
+        return ResponseEntity.ok().build();
+    }
 
+    // Workflow Action: Schedule Publish
+    @PostMapping("/{id}/schedule")
+    @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
+    public ResponseEntity<Void> schedule(@PathVariable UUID id, @RequestParam LocalDateTime scheduledAt,
+            @RequestParam(required = false) UUID categoryId) {
+        Article article = getAndCheck(id);
+        Article old = cloneArticle(article);
+        article.setStatus(Article.ArticleStatus.SCHEDULED);
+        article.setScheduledAt(scheduledAt);
+        article.setUpdatedAt(LocalDateTime.now());
+        articleMapper.update(article);
+        createVersion(article, "Scheduled for " + scheduledAt);
+        auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
+        return ResponseEntity.ok().build();
+    }
+
+    // Workflow Action: Archive
+    @PostMapping("/{id}/archive")
+    @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
+    public ResponseEntity<Void> archive(@PathVariable UUID id, @RequestParam(required = false) UUID categoryId) {
+        Article article = getAndCheck(id);
+        Article old = cloneArticle(article);
+        article.setStatus(Article.ArticleStatus.ARCHIVED);
+        article.setUpdatedAt(LocalDateTime.now());
+        articleMapper.update(article);
+        createVersion(article, "Archived");
+        auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
         return ResponseEntity.ok().build();
     }
 
     // Workflow Action: Reject
     @PostMapping("/{id}/reject")
     @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
-    public ResponseEntity<Void> reject(@PathVariable UUID id, @RequestParam(required = false) UUID categoryId) {
+    public ResponseEntity<Void> reject(@PathVariable UUID id, @RequestParam String note,
+            @RequestParam(required = false) UUID categoryId) {
+        Article article = getAndCheck(id);
+        Article old = cloneArticle(article);
+        article.setStatus(Article.ArticleStatus.REJECTED);
+        article.setUpdatedAt(LocalDateTime.now());
+        articleMapper.update(article);
+        createVersion(article, "Rejected: " + note);
+        auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
+        return ResponseEntity.ok().build();
+    }
 
+    // Versioning Endpoints
+    @GetMapping("/{id}/versions")
+    @RequirePermission(namespace = "articles", action = "read")
+    public List<ArticleVersion> listVersions(@PathVariable UUID id) {
+        return versionMapper.findByArticleId(id);
+    }
+
+    @GetMapping("/versions/{versionId}")
+    @RequirePermission(namespace = "articles", action = "read")
+    public ArticleVersion getVersion(@PathVariable UUID versionId) {
+        return versionMapper.findById(versionId);
+    }
+
+    @PostMapping("/versions/{versionId}/restore")
+    @RequirePermission(namespace = "articles", action = "write")
+    public Article restoreVersion(@PathVariable UUID versionId) throws JsonProcessingException {
+        ArticleVersion version = versionMapper.findById(versionId);
+        if (version == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        Article restored = objectMapper.readValue(version.getSnapshotJson(), Article.class);
+        Article existing = articleMapper.findById(restored.getId());
+        if (existing == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+        Article old = cloneArticle(existing);
+        restored.setUpdatedAt(LocalDateTime.now());
+        restored.setUpdatedByUserId(permissionService.getCurrentUserId());
+        restored.setUpdatedByEmail(permissionService.getCurrentUserEmail());
+        restored.setStatus(Article.ArticleStatus.DRAFT); // Always restore as draft
+
+        articleMapper.update(restored);
+        saveCategories(restored);
+        saveTags(restored);
+
+        createVersion(restored, "Restored from version " + version.getVersionNumber());
+        auditService.log("VERSION_RESTORE", "ARTICLE", restored.getId().toString(), old, restored);
+        return restored;
+    }
+
+    private Article getAndCheck(UUID id) {
         Article article = articleMapper.findById(id);
         if (article == null)
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
-        article.setStatus(Article.ArticleStatus.DRAFT);
-        article.setUpdatedAt(LocalDateTime.now());
-        articleMapper.update(article);
-
-        return ResponseEntity.ok().build();
+        return article;
     }
+
+    private void createVersion(Article article, String diffSummary) {
+        try {
+            ArticleVersion version = new ArticleVersion();
+            version.setId(UUID.randomUUID());
+            version.setArticleId(article.getId());
+            version.setVersionNumber(versionMapper.getMaxVersionNumber(article.getId()) + 1);
+            version.setSnapshotJson(objectMapper.writeValueAsString(article));
+            version.setDiffSummary(diffSummary);
+            version.setStatusAtThatTime(article.getStatus().name());
+            version.setEditedByUserId(permissionService.getCurrentUserId());
+            version.setEditedByEmail(permissionService.getCurrentUserEmail());
+            version.setEditedAt(LocalDateTime.now());
+            versionMapper.insert(version);
+        } catch (Exception e) {
+            log.error("Failed to create article version", e);
+        }
+    }
+
+    private Article cloneArticle(Article a) {
+        // Deep clone via JSON for audit
+        try {
+            return objectMapper.readValue(objectMapper.writeValueAsString(a), Article.class);
+        } catch (Exception e) {
+            return a;
+        }
+    }
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ArticleController.class);
 }

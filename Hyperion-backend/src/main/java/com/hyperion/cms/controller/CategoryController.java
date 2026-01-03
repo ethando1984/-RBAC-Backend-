@@ -3,6 +3,7 @@ package com.hyperion.cms.controller;
 import com.hyperion.cms.mapper.CategoryMapper;
 import com.hyperion.cms.model.Category;
 import com.hyperion.cms.security.PermissionService;
+import com.hyperion.cms.security.RequirePermission;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -21,10 +22,8 @@ public class CategoryController {
     }
 
     @GetMapping
+    @RequirePermission(namespace = "categories", action = "read")
     public List<?> list(@RequestParam(defaultValue = "false") boolean flat) {
-        if (!permissionService.can("categories", "read")) {
-            throw new RuntimeException("Access Denied: Requires categories:read");
-        }
         List<Category> allCategoriesObj = categoryMapper.findAll();
 
         if (flat) {
@@ -78,18 +77,14 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}")
+    @RequirePermission(namespace = "categories", action = "read")
     public Category get(@PathVariable UUID id) {
-        if (!permissionService.can("categories", "read")) {
-            throw new RuntimeException("Access Denied: Requires categories:read");
-        }
         return categoryMapper.findById(id);
     }
 
     @PostMapping
+    @RequirePermission(namespace = "categories", action = "manage")
     public Category create(@RequestBody Category category) {
-        if (!permissionService.can("categories", "manage")) {
-            throw new RuntimeException("Access Denied: Requires categories:manage");
-        }
         if (category.getId() == null) {
             category.setId(UUID.randomUUID());
         }
@@ -118,20 +113,16 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
+    @RequirePermission(namespace = "categories", action = "manage")
     public Category update(@PathVariable UUID id, @RequestBody Category category) {
-        if (!permissionService.can("categories", "manage")) {
-            throw new RuntimeException("Access Denied: Requires categories:manage");
-        }
         category.setId(id);
         categoryMapper.update(category);
         return category;
     }
 
     @DeleteMapping("/{id}")
+    @RequirePermission(namespace = "categories", action = "manage")
     public void delete(@PathVariable UUID id) {
-        if (!permissionService.can("categories", "manage")) {
-            throw new RuntimeException("Access Denied: Requires categories:manage");
-        }
         categoryMapper.delete(id);
     }
 }

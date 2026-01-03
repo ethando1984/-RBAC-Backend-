@@ -196,3 +196,13 @@ CREATE TABLE IF NOT EXISTS article_tags (
     FOREIGN KEY (article_id) REFERENCES articles(id),
     FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
+
+CREATE TABLE IF NOT EXISTS todos (
+    id UUID PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    user_id VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
