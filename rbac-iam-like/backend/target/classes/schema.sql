@@ -47,7 +47,8 @@ CREATE TABLE audit_logs (
     affected_roles_count INT DEFAULT 0,
     affected_users_count INT DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    ip_address VARCHAR(50)
+    ip_address VARCHAR(50),
+    correlation_id VARCHAR(255)
 );
 CREATE TABLE namespaces (
     namespace_id UUID DEFAULT RANDOM_UUID() PRIMARY KEY,

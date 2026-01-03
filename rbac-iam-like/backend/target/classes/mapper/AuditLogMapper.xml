@@ -15,13 +15,14 @@
         <result property="affectedUsersCount" column="affected_users_count"/>
         <result property="createdAt" column="created_at"/>
         <result property="ipAddress" column="ip_address"/>
+        <result property="correlationId" column="correlation_id"/>
     </resultMap>
 
     <insert id="insert" parameterType="com.aitech.rbac.model.AuditLog">
         INSERT INTO audit_logs (log_id, actor_user_id, actor_email, action_type, entity_type, entity_id,
-                                old_value_json, new_value_json, affected_roles_count, affected_users_count, created_at, ip_address)
+                                old_value_json, new_value_json, affected_roles_count, affected_users_count, created_at, ip_address, correlation_id)
         VALUES (#{logId}, #{actorUserId}, #{actorEmail}, #{actionType}, #{entityType}, #{entityId},
-                #{oldValueJson}, #{newValueJson}, #{affectedRolesCount}, #{affectedUsersCount}, #{createdAt}, #{ipAddress})
+                #{oldValueJson}, #{newValueJson}, #{affectedRolesCount}, #{affectedUsersCount}, #{createdAt}, #{ipAddress}, #{correlationId})
     </insert>
 
     <select id="findAll" resultMap="AuditLogResultMap">

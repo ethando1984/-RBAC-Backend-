@@ -10,6 +10,7 @@ import com.hyperion.cms.security.RequireCategoryPermission;
 import com.hyperion.cms.model.ArticleVersion;
 import com.hyperion.cms.mapper.ArticleVersionMapper;
 import com.hyperion.cms.service.AuditService;
+import com.hyperion.cms.service.SlugService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,15 +33,18 @@ public class ArticleController {
     private final AuditService auditService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
+    private final SlugService slugService;
+
     public ArticleController(ArticleMapper articleMapper, ArticleVersionMapper versionMapper, TagMapper tagMapper,
             PermissionService permissionService, AuditService auditService,
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper) {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper, SlugService slugService) {
         this.articleMapper = articleMapper;
         this.versionMapper = versionMapper;
         this.tagMapper = tagMapper;
         this.permissionService = permissionService;
         this.auditService = auditService;
         this.objectMapper = objectMapper;
+        this.slugService = slugService;
     }
 
     @GetMapping
@@ -109,11 +113,14 @@ public class ArticleController {
         article.setStatus(Article.ArticleStatus.DRAFT);
         article.setVisibility("PUBLIC");
 
-        // Slug generation (very basic for MVP)
-        if (article.getSlug() == null) {
-            String titleBase = (article.getTitle() != null ? article.getTitle() : "untitled")
-                    .toLowerCase().replaceAll("[^a-z0-9]", "-");
-            article.setSlug(titleBase + "-" + UUID.randomUUID().toString().substring(0, 4));
+        // Slug generation
+        if (article.getSlug() == null || article.getSlug().trim().isEmpty()) {
+            String slugBase = slugService.toAsciiSlug(article.getTitle());
+            article.setSlug(slugService.ensureUniqueSlug("ARTICLE", slugBase, article.getId()));
+        } else {
+            // Ensure manual slug is valid ASCII
+            article.setSlug(slugService.toAsciiSlug(article.getSlug()));
+            article.setSlug(slugService.ensureUniqueSlug("ARTICLE", article.getSlug(), article.getId()));
         }
 
         articleMapper.insert(article);
@@ -162,10 +169,21 @@ public class ArticleController {
             existing.setStatus(Article.ArticleStatus.PENDING_EDITORIAL);
         }
 
-        // Update slug if title changed significantly
-        if (article.getTitle() != null && !article.getTitle().equals(oldTitle)) {
-            existing.setSlug(article.getTitle().toLowerCase().replaceAll("[^a-z0-9]", "-") + "-"
-                    + UUID.randomUUID().toString().substring(0, 4));
+        // Slug handling
+        String oldSlug = existing.getSlug();
+        String newSlug = article.getSlug();
+
+        if (newSlug != null && !newSlug.trim().isEmpty()) {
+            existing.setSlug(slugService.toAsciiSlug(newSlug));
+        } else if (article.getTitle() != null && !article.getTitle().equals(oldTitle)) {
+            // Optionally update slug if title changed (user requirement: optionally update)
+            // Here we update it if they didn't provide a manual slug but changed the title
+            String slugBase = slugService.toAsciiSlug(article.getTitle());
+            existing.setSlug(slugService.ensureUniqueSlug("ARTICLE", slugBase, existing.getId()));
+        }
+
+        if (!existing.getSlug().equals(oldSlug)) {
+            slugService.handleSlugChange("ARTICLE", existing.getId(), oldSlug, existing.getSlug());
         }
 
         articleMapper.update(existing);
@@ -236,7 +254,7 @@ public class ArticleController {
     }
 
     // Workflow Action: Publish Now
-    @PostMapping("/{id}/publish-now")
+    @PostMapping(value = { "/{id}/publish-now", "/{id}/publish" })
     @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
     public ResponseEntity<Void> publishNow(@PathVariable UUID id, @RequestParam(required = false) UUID categoryId) {
         Article article = getAndCheck(id);

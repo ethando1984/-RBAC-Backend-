@@ -1,7 +1,7 @@
 # Task Management System Implementation
 
 ## Overview
-Implemented a comprehensive TODO/Task management system for Hemera CMS with full backend and frontend integration.
+Implemented a comprehensive TODO/Task management system for Hyperion  CMS with full backend and frontend integration.
 
 ## Backend Implementation
 

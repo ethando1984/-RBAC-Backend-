@@ -1,2 +1,3 @@
 com\hyperion\cms\HyperionBackendApplicationTests.class
 com\hyperion\cms\security\PermissionServiceTest.class
+com\hyperion\cms\service\SlugServiceTest.class

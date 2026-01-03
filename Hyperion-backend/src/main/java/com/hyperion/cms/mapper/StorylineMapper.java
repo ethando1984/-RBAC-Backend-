@@ -40,6 +40,7 @@ public interface StorylineMapper {
                         "SELECT s.*, (SELECT COUNT(*) FROM article_storylines WHERE storyline_id = s.id) as articleCount FROM storylines s "
                         +
                         "<where>" +
+                        "<if test='status != null and status != \"\"'> AND s.status = #{status}</if>" +
                         "<if test='search != null and search != \"\"'> AND (LOWER(s.title) LIKE LOWER(CONCAT('%', #{search}, '%')))</if>"
                         +
                         "</where>" +
@@ -57,7 +58,8 @@ public interface StorylineMapper {
                         @Result(property = "createdAt", column = "created_at"),
                         @Result(property = "updatedAt", column = "updated_at")
         })
-        List<Storyline> findAll(@Param("search") String search, @Param("limit") int limit, @Param("offset") int offset);
+        List<Storyline> findAll(@Param("status") String status, @Param("search") String search,
+                        @Param("limit") int limit, @Param("offset") int offset);
 
         @Insert("INSERT INTO storylines (id, title, slug, description, status, contents_json, layout_json, seo_title, seo_description, created_by_user_id, created_by_email, created_at, updated_at) "
                         +

@@ -14,6 +14,7 @@ public class Article {
     private String excerpt;
     private UUID coverMediaId;
     private String coverMediaUrl; // Transient field for frontend display
+    private String redirectTo; // Transient field for slug redirects
     private String sourceName;
     private String sourceUrl;
 

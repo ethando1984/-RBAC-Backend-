@@ -74,6 +74,7 @@ com\aitech\rbac\model\AuditLog.class
 com\aitech\rbac\service\impl\PolicyEvaluationServiceImpl.class
 com\aitech\rbac\controller\UserRoleController.class
 com\aitech\rbac\security\RequirePermission.class
+com\aitech\rbac\config\CorrelationIdFilter.class
 com\aitech\rbac\model\Registry$NamespaceDef.class
 com\aitech\rbac\dto\LoginRequest.class
 com\aitech\rbac\mapper\NamespaceMapper.class

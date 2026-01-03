@@ -4,7 +4,10 @@ import com.hyperion.cms.mapper.CategoryMapper;
 import com.hyperion.cms.model.Category;
 import com.hyperion.cms.security.PermissionService;
 import com.hyperion.cms.security.RequirePermission;
+import com.hyperion.cms.service.SlugService;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,10 +18,13 @@ public class CategoryController {
 
     private final CategoryMapper categoryMapper;
     private final PermissionService permissionService;
+    private final SlugService slugService;
 
-    public CategoryController(CategoryMapper categoryMapper, PermissionService permissionService) {
+    public CategoryController(CategoryMapper categoryMapper, PermissionService permissionService,
+            SlugService slugService) {
         this.categoryMapper = categoryMapper;
         this.permissionService = permissionService;
+        this.slugService = slugService;
     }
 
     @GetMapping
@@ -41,7 +47,7 @@ public class CategoryController {
             map.put("seoDescription", cat.getSeoDescription());
             map.put("positionConfigJson", cat.getPositionConfigJson());
             return map;
-        }).toList();
+        }).collect(Collectors.toList());
 
         // Build hierarchical structure
         Map<String, List<Map<String, Object>>> childrenMap = new HashMap<>();
@@ -89,33 +95,45 @@ public class CategoryController {
             category.setId(UUID.randomUUID());
         }
 
-        String baseSlug = category.getSlug();
-        if (baseSlug == null || baseSlug.isEmpty()) {
-            baseSlug = category.getName().toLowerCase().replaceAll("[^a-z0-9]+", "-");
+        if (category.getSlug() == null || category.getSlug().trim().isEmpty()) {
+            String slugBase = slugService.toAsciiSlug(category.getName());
+            category.setSlug(slugService.ensureUniqueSlug("CATEGORY", slugBase, category.getId()));
+        } else {
+            category.setSlug(slugService.toAsciiSlug(category.getSlug()));
+            category.setSlug(slugService.ensureUniqueSlug("CATEGORY", category.getSlug(), category.getId()));
         }
-
-        category.setSlug(ensureUniqueSlug(baseSlug));
 
         categoryMapper.insert(category);
         return category;
     }
 
-    private String ensureUniqueSlug(String slug) {
-        String uniqueSlug = slug;
-        int count = 1;
-        while (categoryMapper.findBySlug(uniqueSlug) != null) {
-            uniqueSlug = slug + "-" + UUID.randomUUID().toString().substring(0, 4);
-            // Safety break just in case
-            if (count++ > 10)
-                break;
-        }
-        return uniqueSlug;
-    }
-
     @PutMapping("/{id}")
     @RequirePermission(namespace = "categories", action = "manage")
     public Category update(@PathVariable UUID id, @RequestBody Category category) {
+        Category existing = categoryMapper.findById(id);
+        if (existing == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        String oldSlug = existing.getSlug();
         category.setId(id);
+
+        if (category.getSlug() == null || category.getSlug().trim().isEmpty()) {
+            if (!category.getName().equals(existing.getName())) {
+                String slugBase = slugService.toAsciiSlug(category.getName());
+                category.setSlug(slugService.ensureUniqueSlug("CATEGORY", slugBase, id));
+            } else {
+                category.setSlug(oldSlug);
+            }
+        } else {
+            category.setSlug(slugService.toAsciiSlug(category.getSlug()));
+            category.setSlug(slugService.ensureUniqueSlug("CATEGORY", category.getSlug(), id));
+        }
+
+        if (!category.getSlug().equals(oldSlug)) {
+            slugService.handleSlugChange("CATEGORY", id, oldSlug, category.getSlug());
+        }
+
         categoryMapper.update(category);
         return category;
     }

@@ -1,0 +1,29 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: hyperion-public-gateway
+  cache:
+    type: simple # Use in-memory cache for dev instead of Redis
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+hyperion:
+  cms:
+    url: ${CMS_CORE_URL:http://localhost:8081}
+    service-name: hyperion-public-gateway
+    service-token: ${CMS_CORE_SERVICE_TOKEN:dev-service-token}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+
+logging:
+  level:
+    com.hyperion.gateway: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] [%X{correlationId}] %-5level %logger{36} - %msg%n"

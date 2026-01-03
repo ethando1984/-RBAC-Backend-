@@ -40,10 +40,7 @@ spring:
           max-idle: 8
           min-idle: 0
   cache:
-    type: redis
-    redis:
-      time-to-live: 300000  # 5 minutes default
-      cache-null-values: false
+    type: simple # Use simple cache for dev instead of Redis
   servlet:
     multipart:
       max-file-size: 500MB

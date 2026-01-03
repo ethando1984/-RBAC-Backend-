@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@OpenAPIDefinition(info = @Info(title = "Hemera CMS API", version = "1.0", description = "Core backend for Hemera CMS managing Content and SEO"), security = @SecurityRequirement(name = "bearerAuth"))
+@OpenAPIDefinition(info = @Info(title = "Hyperion  CMS API", version = "1.0", description = "Core backend for Hyperion  CMS managing Content and SEO"), security = @SecurityRequirement(name = "bearerAuth"))
 @SecurityScheme(name = "bearerAuth", type = SecuritySchemeType.HTTP, bearerFormat = "JWT", scheme = "bearer", in = SecuritySchemeIn.HEADER)
 public class OpenApiConfig {
 }

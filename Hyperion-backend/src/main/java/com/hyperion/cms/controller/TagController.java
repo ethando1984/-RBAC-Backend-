@@ -3,6 +3,7 @@ package com.hyperion.cms.controller;
 import com.hyperion.cms.mapper.TagMapper;
 import com.hyperion.cms.model.Tag;
 import com.hyperion.cms.security.PermissionService;
+import com.hyperion.cms.service.SlugService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,10 +18,12 @@ public class TagController {
 
     private final TagMapper tagMapper;
     private final PermissionService permissionService;
+    private final SlugService slugService;
 
-    public TagController(TagMapper tagMapper, PermissionService permissionService) {
+    public TagController(TagMapper tagMapper, PermissionService permissionService, SlugService slugService) {
         this.tagMapper = tagMapper;
         this.permissionService = permissionService;
+        this.slugService = slugService;
     }
 
     @GetMapping
@@ -52,13 +55,18 @@ public class TagController {
         if (tag.getCreatedAt() == null)
             tag.setCreatedAt(LocalDateTime.now());
 
-        // Simple slug generation if not provided
-        if (tag.getSlug() == null || tag.getSlug().isEmpty()) {
-            tag.setSlug(tag.getName().toLowerCase().replaceAll("[^a-z0-9]", "-"));
+        // Slug generation
+        if (tag.getSlug() == null || tag.getSlug().trim().isEmpty()) {
+            String slugBase = slugService.toAsciiSlug(tag.getName());
+            tag.setSlug(slugService.ensureUniqueSlug("TAG", slugBase, tag.getId()));
+        } else {
+            tag.setSlug(slugService.toAsciiSlug(tag.getSlug()));
+            tag.setSlug(slugService.ensureUniqueSlug("TAG", tag.getSlug(), tag.getId()));
         }
 
-        // Check for duplicate name
-        if (tagMapper.findByName(tag.getName()) != null) {
+        // Check for duplicate name (strict on name too)
+        Tag existing = tagMapper.findByName(tag.getName());
+        if (existing != null && !existing.getId().equals(tag.getId())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Tag already exists with name: " + tag.getName());
         }
 
@@ -71,7 +79,31 @@ public class TagController {
         if (!permissionService.can("articles", "write")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing articles:write permission");
         }
+
+        Tag existing = tagMapper.findById(id);
+        if (existing == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        String oldSlug = existing.getSlug();
         tag.setId(id);
+
+        if (tag.getSlug() == null || tag.getSlug().trim().isEmpty()) {
+            if (!tag.getName().equals(existing.getName())) {
+                String slugBase = slugService.toAsciiSlug(tag.getName());
+                tag.setSlug(slugService.ensureUniqueSlug("TAG", slugBase, id));
+            } else {
+                tag.setSlug(oldSlug);
+            }
+        } else {
+            tag.setSlug(slugService.toAsciiSlug(tag.getSlug()));
+            tag.setSlug(slugService.ensureUniqueSlug("TAG", tag.getSlug(), id));
+        }
+
+        if (!tag.getSlug().equals(oldSlug)) {
+            slugService.handleSlugChange("TAG", id, oldSlug, tag.getSlug());
+        }
+
         tagMapper.update(tag);
         return tag;
     }
@@ -102,7 +134,6 @@ public class TagController {
 
     @GetMapping("/trending")
     public List<Tag> trending() {
-        // Mock trending - for now just returns first 5
         return tagMapper.findAll().stream().limit(5).toList();
     }
 }

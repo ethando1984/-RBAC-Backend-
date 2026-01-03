@@ -222,3 +222,15 @@ CREATE TABLE IF NOT EXISTS layouts (
 );
 
 
+CREATE TABLE IF NOT EXISTS slug_redirects (
+    id UUID PRIMARY KEY,
+    entity_type VARCHAR(50) NOT NULL, -- ARTICLE, CATEGORY, STORYLINE, TAG
+    entity_id UUID NOT NULL,
+    old_slug VARCHAR(255) NOT NULL,
+    new_slug VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_slug_redirects_old_slug ON slug_redirects(old_slug);
+
+-- Enable unaccent extension for diacritic-insensitive search (if PostgreSQL)
+-- CREATE EXTENSION IF NOT EXISTS unaccent;

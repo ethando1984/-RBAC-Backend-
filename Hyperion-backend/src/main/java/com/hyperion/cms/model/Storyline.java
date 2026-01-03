@@ -23,10 +23,12 @@ public class Storyline {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String redirectTo; // Transient field for slug redirects
 
     // Transient fields
     private Integer articleCount;
     private List<UUID> articleIds;
+    private List<Article> articles;
     private List<StorylineMedia> media;
 
     @Data

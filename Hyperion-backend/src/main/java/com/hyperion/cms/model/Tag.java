@@ -10,5 +10,6 @@ public class Tag {
     private String name;
     private String slug;
     private String description;
+    private String redirectTo; // Transient field for slug redirects
     private LocalDateTime createdAt;
 }

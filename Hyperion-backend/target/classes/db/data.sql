@@ -14,7 +14,7 @@ INSERT INTO categories (id, parent_id, name, slug) VALUES
 
 -- Seed Articles
 INSERT INTO articles (id, title, slug, status, created_by_user_id, created_by_email) VALUES
-('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Hemera Launch Day', 'hemera-launch-day', 'PUBLISHED', 'admin-001', 'admin@hemera.com'),
+('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Hyperion  Launch Day', 'hemera-launch-day', 'PUBLISHED', 'admin-001', 'admin@hemera.com'),
 ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Draft Article about AI', 'draft-article-ai', 'DRAFT', 'editor-001', 'editor@hemera.com');
 
 -- Seed Article Categories

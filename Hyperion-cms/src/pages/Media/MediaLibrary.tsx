@@ -203,7 +203,7 @@ export function MediaLibrary() {
                             <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
                         </div>
                         <p className="font-bold text-gray-900">Curating your assets...</p>
-                        <p className="text-xs mt-1">Connecting to Hemera Cloud</p>
+                        <p className="text-xs mt-1">Connecting to Hyperion  Cloud</p>
                     </div>
                 ) : (
                     <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin">
