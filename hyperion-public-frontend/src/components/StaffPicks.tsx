@@ -17,7 +17,7 @@ export function StaffPicks({ articles, title = "Staff Picks", variant = 'full' }
             <div className="space-y-6">
                 <div className="flex items-center space-x-2 text-indigo-500">
                     <Sparkles size={16} />
-                    <h3 className="text-sm font-black uppercase tracking-widest">{title}</h3>
+                    <h3 className="text-sm font-black uppercase tracking-widest" title={title}></h3>
                 </div>
                 <div className="space-y-4">
                     {articles.map(article => (
@@ -29,7 +29,7 @@ export function StaffPicks({ articles, title = "Staff Picks", variant = 'full' }
                             <h4 className="text-sm font-bold group-hover:text-indigo-400 transition-colors line-clamp-2 leading-snug mb-1">
                                 {article.title}
                             </h4>
-                            <div className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                            <div className="text-[10px] text-zinc-400 uppercase tracking-widest font-bold">
                                 {article.author?.name || 'Editorial'}
                             </div>
                         </Link>

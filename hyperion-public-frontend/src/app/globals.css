@@ -6,31 +6,32 @@
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 5, 5, 5;
   --background-end-rgb: 0, 0, 0;
-  --accent: 99, 102, 241; /* Indigo 500 */
+  --accent: 99, 102, 241;
+  /* Indigo 500 */
 }
 
 @layer base {
   body {
-    @apply bg-[#050505] text-white selection:bg-indigo-500/30 selection:text-indigo-200;
+    @apply bg-white text-zinc-900 selection:bg-indigo-500/30 selection:text-indigo-600;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.05] shadow-2xl transition-all duration-300;
+    @apply bg-zinc-900/[0.03] backdrop-blur-xl border border-zinc-900/[0.05] shadow-sm transition-all duration-300;
   }
-  
+
   .glass-card:hover {
-    @apply bg-white/[0.06] border-white/[0.1] -translate-y-1;
+    @apply bg-zinc-900/[0.06] border-zinc-900/[0.1] -translate-y-1 shadow-md;
   }
 
   .text-gradient {
-    @apply bg-gradient-to-br from-white via-white to-white/40 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-500 bg-clip-text text-transparent;
   }
 
   .text-indigo-gradient {
-    @apply bg-gradient-to-br from-indigo-400 via-indigo-500 to-purple-600 bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-indigo-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent;
   }
 
   .btn-premium {
@@ -54,16 +55,23 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-black/20;
+  @apply bg-zinc-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  @apply bg-zinc-300 rounded-full hover:bg-zinc-400 transition-colors;
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .animate-float {
@@ -71,10 +79,34 @@
 }
 
 @keyframes pulse-slow {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
+
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
 }

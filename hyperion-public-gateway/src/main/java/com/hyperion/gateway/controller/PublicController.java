@@ -23,7 +23,7 @@ public class PublicController {
     @GetMapping("/home")
     public ResponseEntity<HomeResponse> getHome() {
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(5, TimeUnit.MINUTES))
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES))
                 .body(publicApiService.getHomeData());
     }
 
@@ -36,7 +36,7 @@ public class PublicController {
                     .build();
         }
         return ResponseEntity.ok()
-                .cacheControl(CacheControl.maxAge(10, TimeUnit.MINUTES).mustRevalidate())
+                .cacheControl(CacheControl.maxAge(1, TimeUnit.MINUTES).mustRevalidate())
                 .body(article);
     }
 

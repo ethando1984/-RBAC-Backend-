@@ -24,12 +24,7 @@ export default async function StorylinesPage() {
                         <BookOpen size={14} />
                         <span>Curated Series</span>
                     </div>
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tight text-gradient leading-[0.9]">
-                        Deep <span className="italic text-indigo-gradient">Storylines</span>
-                    </h1>
-                    <p className="text-xl md:text-2xl text-white/50 max-w-2xl leading-relaxed font-medium">
-                        Follow evolving narratives and long-term coverage across our most important topics.
-                    </p>
+
                 </header>
 
                 <div className="space-y-24">
@@ -57,20 +52,20 @@ export default async function StorylinesPage() {
                                 </Link>
 
                                 {/* Description/Subtitle */}
-                                <p className="text-lg md:text-xl text-white/60 mb-10 leading-relaxed max-w-2xl">
+                                <p className="text-lg md:text-xl text-zinc-600 mb-10 leading-relaxed max-w-2xl">
                                     {storyline.description}
                                 </p>
 
                                 {/* Meta Information */}
-                                <div className="flex flex-wrap items-center gap-8 text-xs text-white/40 mb-10">
+                                <div className="flex flex-wrap items-center gap-8 text-xs text-zinc-400 mb-10">
                                     <div className="flex items-center space-x-3">
-                                        <div className="p-2 rounded-lg bg-white/5">
+                                        <div className="p-2 rounded-lg bg-zinc-100">
                                             <Layers size={14} className="text-indigo-500" />
                                         </div>
                                         <span className="font-bold tracking-wider">{storyline.articleCount || 0} ARTICLES</span>
                                     </div>
                                     <div className="flex items-center space-x-3">
-                                        <div className="p-2 rounded-lg bg-white/5">
+                                        <div className="p-2 rounded-lg bg-zinc-100">
                                             <Calendar size={14} className="text-indigo-500" />
                                         </div>
                                         <span className="font-bold tracking-wider uppercase">Updated {new Date(storyline.updatedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -80,7 +75,7 @@ export default async function StorylinesPage() {
                                 {/* Read More Link */}
                                 <Link
                                     href={`/storylines/${storyline.slug}`}
-                                    className="inline-flex items-center space-x-3 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-indigo-400 hover:text-white hover:bg-indigo-500 transition-all duration-300 text-sm font-bold group/btn"
+                                    className="inline-flex items-center space-x-3 px-6 py-3 rounded-xl bg-zinc-100 border border-zinc-200 text-indigo-400 hover:text-white hover:bg-indigo-500 transition-all duration-300 text-sm font-bold group/btn"
                                 >
                                     <span>Enter Storyline</span>
                                     <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
@@ -88,13 +83,13 @@ export default async function StorylinesPage() {
 
                                 {/* Divider */}
                                 {storylines.indexOf(storyline) < storylines.length - 1 && (
-                                    <div className="mt-24 h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent" />
+                                    <div className="mt-24 h-px bg-gradient-to-r from-zinc-200 via-zinc-100 to-transparent" />
                                 )}
                             </article>
                         ))
                     ) : (
-                        <div className="py-24 text-center glass-card rounded-[32px] border-dashed">
-                            <p className="text-white/30 font-medium text-lg">No ongoing storylines were found.</p>
+                        <div className="py-24 text-center glass-card rounded-[32px] border-dashed border-zinc-200">
+                            <p className="text-zinc-400 font-medium text-lg">No ongoing storylines were found.</p>
                         </div>
                     )}
                 </div>
