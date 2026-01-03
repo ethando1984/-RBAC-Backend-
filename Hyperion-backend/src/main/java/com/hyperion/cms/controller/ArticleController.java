@@ -5,6 +5,8 @@ import com.hyperion.cms.mapper.TagMapper;
 import com.hyperion.cms.model.Article;
 import com.hyperion.cms.mapper.ArticleMapper;
 import com.hyperion.cms.security.PermissionService;
+import com.hyperion.cms.security.RequirePermission;
+import com.hyperion.cms.security.RequireCategoryPermission;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -31,21 +33,17 @@ public class ArticleController {
     }
 
     @GetMapping
+    @RequirePermission(namespace = "articles", action = "read")
     public List<Article> list(@RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        if (!permissionService.can("articles", "read")) {
-            throw new AccessDeniedException("Missing global articles:read permission");
-        }
         return articleMapper.findAll(status, search, size, page * size);
     }
 
     @GetMapping("/{id}")
+    @RequirePermission(namespace = "articles", action = "read")
     public Article get(@PathVariable UUID id) {
-        if (!permissionService.can("articles", "read")) {
-            throw new AccessDeniedException("Missing global articles:read permission");
-        }
         Article article = articleMapper.findById(id);
         if (article != null) {
             article.setCategoryIds(articleMapper.findCategoryIdsByArticleId(id));
@@ -58,12 +56,8 @@ public class ArticleController {
     }
 
     @PostMapping
+    @RequirePermission(namespace = "articles", action = "write")
     public Article create(@RequestBody Article article) {
-        // Basic check
-        if (!permissionService.can("articles", "write")) {
-            throw new AccessDeniedException("Missing articles:write permission");
-        }
-
         article.setId(UUID.randomUUID());
         article.setCreatedAt(LocalDateTime.now());
         article.setCreatedByUserId(permissionService.getCurrentUserId());
@@ -85,11 +79,8 @@ public class ArticleController {
     }
 
     @PutMapping("/{id}")
+    @RequirePermission(namespace = "articles", action = "write")
     public Article update(@PathVariable UUID id, @RequestBody Article article) {
-        if (!permissionService.can("articles", "write")) {
-            throw new AccessDeniedException("Missing articles:write permission");
-        }
-
         Article existing = articleMapper.findById(id);
         if (existing == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
@@ -180,18 +171,9 @@ public class ArticleController {
 
     // Workflow Action: Submit for Editorial
     @PostMapping("/{id}/submit-editorial")
+    @RequireCategoryPermission(namespace = "articles", action = "write", categoryIdParam = "#categoryId")
     public ResponseEntity<Void> submitEditorial(@PathVariable UUID id,
             @RequestParam(required = false) UUID categoryId) {
-        // Enforce Category Scope if provided, otherwise check global
-        if (categoryId != null) {
-            if (!permissionService.canInCategory(categoryId, "articles", "write")) {
-                throw new AccessDeniedException("Not allowed to submit in this category");
-            }
-        } else {
-            if (!permissionService.can("articles", "write")) {
-                throw new AccessDeniedException("Missing articles:write permission");
-            }
-        }
 
         Article article = articleMapper.findById(id);
         if (article == null)
@@ -206,17 +188,8 @@ public class ArticleController {
 
     // Workflow Action: Publish
     @PostMapping("/{id}/publish")
+    @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
     public ResponseEntity<Void> publish(@PathVariable UUID id, @RequestParam(required = false) UUID categoryId) {
-        // Enforce Category Scope if provided, otherwise check global
-        if (categoryId != null) {
-            if (!permissionService.canInCategory(categoryId, "articles", "publish")) {
-                throw new AccessDeniedException("Not allowed to publish in this category");
-            }
-        } else {
-            if (!permissionService.can("articles", "publish")) {
-                throw new AccessDeniedException("Missing articles:publish permission");
-            }
-        }
 
         Article article = articleMapper.findById(id);
         if (article == null)
@@ -232,16 +205,8 @@ public class ArticleController {
 
     // Workflow Action: Reject
     @PostMapping("/{id}/reject")
+    @RequireCategoryPermission(namespace = "articles", action = "publish", categoryIdParam = "#categoryId")
     public ResponseEntity<Void> reject(@PathVariable UUID id, @RequestParam(required = false) UUID categoryId) {
-        if (categoryId != null) {
-            if (!permissionService.canInCategory(categoryId, "articles", "publish")) {
-                throw new AccessDeniedException("Not allowed to reject in this category");
-            }
-        } else {
-            if (!permissionService.can("articles", "publish")) {
-                throw new AccessDeniedException("Missing articles:publish permission");
-            }
-        }
 
         Article article = articleMapper.findById(id);
         if (article == null)

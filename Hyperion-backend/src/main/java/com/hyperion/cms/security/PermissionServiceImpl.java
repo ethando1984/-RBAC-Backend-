@@ -79,50 +79,63 @@ public class PermissionServiceImpl implements PermissionService {
             for (Map<String, Object> scope : categoryScopes) {
                 String scopeCatId = (String) scope.get("categoryId");
                 if (scopeCatId != null && scopeCatId.equals(categoryId.toString())) {
-                    List<String> denyList = (List<String>) scope.get("deny");
-                    if (denyList != null && (denyList.contains(namespace + ":" + action)
-                            || denyList.contains(namespace + ":*")
-                            || denyList.contains("*:*"))) {
-                        return PermissionDecision.builder()
-                                .allowed(false)
-                                .reasonCode(DecisionReason.DENIED_BY_EXPLICIT_DENY)
-                                .source("JWT")
-                                .namespace(namespace)
-                                .action(action)
-                                .categoryId(categoryId)
-                                .build();
-                    }
-
-                    // 2. Check Category Scopes for Allow (Specific category allow)
-                    List<String> allowList = (List<String>) scope.get("allow");
-                    if (allowList != null && (allowList.contains(namespace + ":" + action)
-                            || allowList.contains(namespace + ":*")
-                            || allowList.contains("*:*"))) {
-                        return PermissionDecision.builder()
-                                .allowed(true)
-                                .reasonCode(DecisionReason.ALLOWED_BY_JWT)
-                                .source("JWT")
-                                .namespace(namespace)
-                                .action(action)
-                                .categoryId(categoryId)
-                                .build();
+                    List<String> denied = (List<String>) scope.get("deny");
+                    if (denied != null) {
+                        for (String p : denied) {
+                            if (matches(p, namespace, action)) {
+                                return PermissionDecision.builder()
+                                        .allowed(false)
+                                        .reasonCode(DecisionReason.DENIED_BY_EXPLICIT_DENY)
+                                        .source("JWT")
+                                        .namespace(namespace)
+                                        .action(action)
+                                        .categoryId(categoryId)
+                                        .build();
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // 3. Check Global Permissions for Allow
+        // 2. Check Category Scopes for Allow (Priority over global if specific allow
+        // exists)
+        if (categoryId != null && categoryScopes != null) {
+            for (Map<String, Object> scope : categoryScopes) {
+                String scopeCatId = (String) scope.get("categoryId");
+                if (scopeCatId != null && scopeCatId.equals(categoryId.toString())) {
+                    List<String> allowed = (List<String>) scope.get("allow");
+                    if (allowed != null) {
+                        for (String p : allowed) {
+                            if (matches(p, namespace, action)) {
+                                return PermissionDecision.builder()
+                                        .allowed(true)
+                                        .reasonCode(DecisionReason.ALLOWED_BY_JWT)
+                                        .source("JWT")
+                                        .namespace(namespace)
+                                        .action(action)
+                                        .categoryId(categoryId)
+                                        .build();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. Check Global Permissions
         if (globalPermissions != null) {
-            if (globalPermissions.contains("*:*") || globalPermissions.contains(namespace + ":*")
-                    || globalPermissions.contains(namespace + ":" + action)) {
-                return PermissionDecision.builder()
-                        .allowed(true)
-                        .reasonCode(DecisionReason.ALLOWED_BY_JWT)
-                        .source("JWT")
-                        .namespace(namespace)
-                        .action(action)
-                        .categoryId(categoryId)
-                        .build();
+            for (String p : globalPermissions) {
+                if (matches(p, namespace, action)) {
+                    return PermissionDecision.builder()
+                            .allowed(true)
+                            .reasonCode(DecisionReason.ALLOWED_BY_JWT)
+                            .source("JWT")
+                            .namespace(namespace)
+                            .action(action)
+                            .categoryId(categoryId)
+                            .build();
+                }
             }
         }
 
@@ -134,6 +147,16 @@ public class PermissionServiceImpl implements PermissionService {
                 .action(action)
                 .categoryId(categoryId)
                 .build();
+    }
+
+    private boolean matches(String permission, String namespace, String action) {
+        if (permission.equals("*:*"))
+            return true;
+        if (permission.equals(namespace + ":*"))
+            return true;
+        if (permission.equals(namespace + ":" + action))
+            return true;
+        return false;
     }
 
     private PermissionDecision evaluateViaRemote(String namespace, String action, UUID categoryId, String resourceId) {
