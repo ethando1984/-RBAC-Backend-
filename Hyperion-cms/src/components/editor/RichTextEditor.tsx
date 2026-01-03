@@ -1,4 +1,4 @@
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Node, mergeAttributes } from '@tiptap/react';
 import { useEffect } from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
@@ -7,7 +7,44 @@ import Youtube from '@tiptap/extension-youtube';
 import Placeholder from '@tiptap/extension-placeholder';
 import { Bold, Italic, List, ListOrdered, Image as ImageIcon, Link as LinkIcon, Youtube as YoutubeIcon, Quote, Heading1, Heading2 } from 'lucide-react';
 
-const MenuBar = ({ editor }: { editor: any }) => {
+const VideoExtension = Node.create({
+    name: 'video',
+    group: 'block',
+    atom: true,
+
+    addAttributes() {
+        return {
+            src: {
+                default: null,
+            },
+        }
+    },
+
+    parseHTML() {
+        return [
+            {
+                tag: 'video',
+            },
+        ]
+    },
+
+    renderHTML({ HTMLAttributes }) {
+        return ['video', mergeAttributes(HTMLAttributes, { controls: true, class: 'w-full rounded-xl my-4' })]
+    },
+
+    addCommands() {
+        return {
+            setVideo: (options: { src: string }) => ({ commands }: { commands: any }) => {
+                return commands.insertContent({
+                    type: 'video',
+                    attrs: options,
+                })
+            },
+        }
+    },
+});
+
+const MenuBar = ({ editor, onImageRequest }: { editor: any, onImageRequest?: () => void }) => {
     if (!editor) {
         return null;
     }
@@ -78,9 +115,13 @@ const MenuBar = ({ editor }: { editor: any }) => {
             <div className="w-px bg-gray-200 mx-2 h-6 self-center"></div>
 
             <button onClick={() => {
-                const url = window.prompt('Image URL')
-                if (url) editor.chain().focus().setImage({ src: url }).run()
-            }} className={buttonClass(false)} title="Insert Image">
+                if (onImageRequest) {
+                    onImageRequest();
+                } else {
+                    const url = window.prompt('Image URL')
+                    if (url) editor.chain().focus().setImage({ src: url }).run()
+                }
+            }} className={buttonClass(false)} title="Insert Media (Image/Video)">
                 <ImageIcon className="h-4 w-4" />
             </button>
             <button onClick={() => {
@@ -107,15 +148,18 @@ interface RichTextEditorProps {
     content?: string;
     onChange?: (html: string) => void;
     editable?: boolean;
+    onImageRequest?: () => void;
+    editorRef?: React.MutableRefObject<any>;
 }
 
-export function RichTextEditor({ content, onChange, editable = true }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange, editable = true, onImageRequest, editorRef }: RichTextEditorProps) {
     const editor = useEditor({
         extensions: [
             StarterKit,
             Image,
             Link.configure({ openOnClick: false }),
             Youtube,
+            VideoExtension,
             Placeholder.configure({ placeholder: 'Start writing your story...' }),
         ],
         content: content || '',
@@ -136,9 +180,15 @@ export function RichTextEditor({ content, onChange, editable = true }: RichTextE
         }
     }, [content, editor]);
 
+    useEffect(() => {
+        if (editor && editorRef) {
+            editorRef.current = editor;
+        }
+    }, [editor, editorRef]);
+
     return (
         <div className="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-black/5 focus-within:ring-2 focus-within:ring-blue-500 transition-shadow">
-            <MenuBar editor={editor} />
+            <MenuBar editor={editor} onImageRequest={onImageRequest} />
             <EditorContent editor={editor} />
         </div>
     );

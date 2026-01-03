@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { RichTextEditor } from '../../components/editor/RichTextEditor';
 import { Save, Send, ChevronLeft, Image as ImageIcon, Settings, Loader2, CheckCircle2, Rocket, RotateCcw, FolderTree, Star, CheckSquare, Square, ChevronDown, ChevronRight, Globe, ImagePlus, Users, Tag as TagIcon, X } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -41,6 +41,8 @@ export function ArticleEditor() {
     const [rejectionNote, setRejectionNote] = useState('');
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+    const [mediaSelectMode, setMediaSelectMode] = useState<'cover' | 'editor'>('cover');
+    const editorRef = useRef<any>(null);
 
     const { data: article, isLoading } = useQuery({
         queryKey: ['article', id],
@@ -477,7 +479,15 @@ export function ArticleEditor() {
                                 </div>
 
                                 <div className="min-h-[600px] pb-20">
-                                    <RichTextEditor content={content} onChange={setContent} />
+                                    <RichTextEditor
+                                        content={content}
+                                        onChange={setContent}
+                                        editorRef={editorRef}
+                                        onImageRequest={() => {
+                                            setMediaSelectMode('editor');
+                                            setIsMediaModalOpen(true);
+                                        }}
+                                    />
                                 </div>
                             </div>
                         </main>
@@ -568,7 +578,10 @@ export function ArticleEditor() {
                                             </div>
                                         ) : (
                                             <button
-                                                onClick={() => setIsMediaModalOpen(true)}
+                                                onClick={() => {
+                                                    setMediaSelectMode('cover');
+                                                    setIsMediaModalOpen(true);
+                                                }}
                                                 className="w-full border-2 border-dashed border-gray-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50/30 hover:border-blue-300 h-32 transition-all"
                                             >
                                                 <ImagePlus className="h-6 w-6 text-blue-500 mb-2" />
@@ -845,8 +858,19 @@ export function ArticleEditor() {
                 isOpen={isMediaModalOpen}
                 onClose={() => setIsMediaModalOpen(false)}
                 onSelect={(media) => {
-                    setCoverMediaId(media.id);
-                    setCoverMediaUrl(media.url);
+                    if (mediaSelectMode === 'cover') {
+                        setCoverMediaId(media.id);
+                        setCoverMediaUrl(media.url);
+                    } else {
+                        const isVideo = ['.mp4', '.webm', '.ogg', '.mov'].some(ext => media.filename.toLowerCase().endsWith(ext));
+                        const url = `http://localhost:8081${media.url}`;
+
+                        if (isVideo) {
+                            editorRef.current?.commands.setVideo({ src: url });
+                        } else {
+                            editorRef.current?.chain().focus().setImage({ src: url }).run();
+                        }
+                    }
                 }}
             />
         </div>

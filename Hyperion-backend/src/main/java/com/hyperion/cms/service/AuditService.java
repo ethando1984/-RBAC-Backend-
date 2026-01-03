@@ -30,9 +30,26 @@ public class AuditService {
             String oldJson = oldValue != null ? objectMapper.writeValueAsString(oldValue) : null;
             String newJson = newValue != null ? objectMapper.writeValueAsString(newValue) : null;
 
-            String sql = "INSERT INTO audit_logs (id, actor_user_id, actor_email, action_type, entity_type, entity_id, old_value_json, new_value_json, created_at) "
-                    +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String correlationId = com.hyperion.cms.config.CorrelationIdFilter.getCurrentCorrelationId();
+            String ipAddress = "unknown";
+
+            try {
+                org.springframework.web.context.request.ServletRequestAttributes attrs = (org.springframework.web.context.request.ServletRequestAttributes) org.springframework.web.context.request.RequestContextHolder
+                        .getRequestAttributes();
+                if (attrs != null) {
+                    ipAddress = attrs.getRequest().getRemoteAddr();
+                    // Could also check X-Forwarded-For header here
+                    String forwarded = attrs.getRequest().getHeader("X-Forwarded-For");
+                    if (forwarded != null && !forwarded.isEmpty()) {
+                        ipAddress = forwarded.split(",")[0].trim();
+                    }
+                }
+            } catch (Exception e) {
+                // Ignore if we can't get request attributes (e.g. async outside web context)
+            }
+
+            String sql = "INSERT INTO audit_logs (id, actor_user_id, actor_email, action_type, entity_type, entity_id, old_value_json, new_value_json, created_at, ip_address, correlation_id) "
+                    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             jdbcTemplate.update(sql,
                     UUID.randomUUID(),
@@ -43,7 +60,9 @@ public class AuditService {
                     entityId,
                     oldJson,
                     newJson,
-                    LocalDateTime.now());
+                    LocalDateTime.now(),
+                    ipAddress,
+                    correlationId);
         } catch (Exception e) {
             // Fallback: don't fail transaction if audit fails, but log to console
             System.err.println("Failed to write audit log: " + e.getMessage());

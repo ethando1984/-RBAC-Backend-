@@ -6,10 +6,10 @@ import com.aitech.rbac.service.AuditService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails; // Or your UserPrincipal
 import org.springframework.stereotype.Service;
-import com.aitech.rbac.service.UserService;
-import com.aitech.rbac.model.User;
+import com.aitech.rbac.config.CorrelationIdFilter;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +19,6 @@ import java.util.UUID;
 public class AuditServiceImpl implements AuditService {
 
     private final AuditLogMapper auditLogMapper;
-    // Removed UserService to break circular dependency
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuditServiceImpl(AuditLogMapper auditLogMapper) {
@@ -70,8 +69,26 @@ public class AuditServiceImpl implements AuditService {
             log.setActorEmail("SYSTEM");
         }
 
-        // IP Address (would ideally come from request context or filter)
-        log.setIpAddress("127.0.0.1");
+        // IP Address
+        try {
+            ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attrs != null) {
+                String ip = attrs.getRequest().getRemoteAddr();
+                // Check X-Forwarded-For
+                String forwarded = attrs.getRequest().getHeader("X-Forwarded-For");
+                if (forwarded != null && !forwarded.isEmpty()) {
+                    ip = forwarded.split(",")[0].trim();
+                }
+                log.setIpAddress(ip);
+            } else {
+                log.setIpAddress("unknown");
+            }
+        } catch (Exception e) {
+            log.setIpAddress("unknown");
+        }
+
+        // Correlation ID
+        log.setCorrelationId(CorrelationIdFilter.getCurrentCorrelationId());
 
         auditLogMapper.insert(log);
     }

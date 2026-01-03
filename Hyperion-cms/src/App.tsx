@@ -17,6 +17,7 @@ import { Tasks } from './pages/Tools/Tasks';
 import { SEO } from './pages/Tools/SEO';
 import { AuditLogs } from './pages/System/AuditLogs';
 import { Settings } from './pages/System/Settings';
+import { Layouts } from './pages/Design/Layouts';
 import { Login } from './pages/Login';
 
 const queryClient = new QueryClient();
@@ -56,6 +57,7 @@ function Layout() {
               <Route path="/seo" element={<SEO />} />
               <Route path="/audit-logs" element={<AuditLogs />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/layouts" element={<Layouts />} />
               <Route path="*" element={<div className="p-10 text-center text-gray-500">Module coming soon...</div>} />
             </Routes>
           </div>

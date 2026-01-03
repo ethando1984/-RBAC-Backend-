@@ -5,6 +5,7 @@ com\hyperion\cms\mapper\StorylineMapper.class
 com\hyperion\cms\security\PermissionDecision$PermissionDecisionBuilder.class
 com\hyperion\cms\model\Article$ArticleStatus.class
 com\hyperion\cms\controller\AuthController.class
+com\hyperion\cms\model\Layout.class
 com\hyperion\cms\security\PermissionServiceImpl.class
 com\hyperion\cms\security\PermissionDecision.class
 com\hyperion\cms\config\OpenApiConfig.class
@@ -17,6 +18,7 @@ com\hyperion\cms\mapper\AuditLogMapper.class
 com\hyperion\cms\controller\ArticleController.class
 com\hyperion\cms\model\Storyline$StorylineMedia.class
 com\hyperion\cms\handler\GlobalExceptionHandler$ErrorResponse$ErrorResponseBuilder.class
+com\hyperion\cms\model\Layout$LayoutType.class
 com\hyperion\cms\controller\TodoController.class
 com\hyperion\cms\security\PermissionService.class
 com\hyperion\cms\model\Tag.class
@@ -34,6 +36,7 @@ com\hyperion\cms\controller\CategoryController.class
 com\hyperion\cms\controller\ToolController.class
 com\hyperion\cms\model\Storyline.class
 com\hyperion\cms\model\CrawlerSource.class
+com\hyperion\cms\controller\LayoutController.class
 com\hyperion\cms\security\IamCenterClient$EvaluateResponse.class
 com\hyperion\cms\service\CrawlerService.class
 com\hyperion\cms\security\EnhancedIamCenterClient.class
@@ -42,6 +45,7 @@ com\hyperion\cms\security\IamCenterClient.class
 com\hyperion\cms\security\PermissionDeniedException.class
 com\hyperion\cms\model\AuditLog.class
 com\hyperion\cms\controller\TaskController.class
+com\hyperion\cms\controller\PublicLayoutController.class
 com\hyperion\cms\HyperionBackendApplication.class
 com\hyperion\cms\security\EnhancedIamCenterClient$EvaluateRequest$EvaluateRequestBuilder.class
 com\hyperion\cms\security\EnhancedIamCenterClient$EvaluateRequest.class
@@ -51,6 +55,7 @@ com\hyperion\cms\handler\UuidTypeHandler.class
 com\hyperion\cms\model\Category.class
 com\hyperion\cms\handler\GlobalExceptionHandler$ErrorResponse.class
 com\hyperion\cms\controller\DashboardController.class
+com\hyperion\cms\mapper\LayoutMapper.class
 com\hyperion\cms\config\SecurityConfig.class
 com\hyperion\cms\mapper\TaskMapper.class
 com\hyperion\cms\controller\MediaController.class

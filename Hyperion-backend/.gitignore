@@ -1,0 +1,40 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Gradle
+.gradle
+build/
+
+# IDEs
+.idea
+.vscode
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+.springBeans
+
+# Logs
+logs/
+*.log
+startup_log_*.txt
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Media & Uploads
+uploads/
+media/
+content/

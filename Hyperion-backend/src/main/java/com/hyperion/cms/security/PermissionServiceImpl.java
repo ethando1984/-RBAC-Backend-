@@ -44,7 +44,6 @@ public class PermissionServiceImpl implements PermissionService {
         if ("*".equals(namespace) && "*".equals(action)) {
             // Reject *:* unless super-admin is explicitly checked elsewhere or this is a
             // super-admin check
-            // For now, let's treat it as a normal evaluation but usually *:* is restricted.
         }
 
         // 1. Fast path: JWT claims
@@ -161,7 +160,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     private PermissionDecision evaluateViaRemote(String namespace, String action, UUID categoryId, String resourceId) {
         String userId = getCurrentUserId();
-        String correlationId = UUID.randomUUID().toString(); // In real app, trace from MDC
+        String correlationId = com.hyperion.cms.config.CorrelationIdFilter.getCurrentCorrelationId();
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String userToken = null;

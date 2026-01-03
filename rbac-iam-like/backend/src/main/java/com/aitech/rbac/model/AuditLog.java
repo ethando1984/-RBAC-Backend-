@@ -18,4 +18,5 @@ public class AuditLog {
     private Integer affectedUsersCount;
     private LocalDateTime createdAt;
     private String ipAddress;
+    private String correlationId;
 }

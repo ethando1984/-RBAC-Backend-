@@ -20,7 +20,9 @@ const navigation = [
     { name: 'SEO', href: '/seo', icon: Search },
     { name: 'Audit Logs', href: '/audit-logs', icon: ClipboardList },
     { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Layouts', href: '/layouts', icon: LayoutDashboard },
 ];
+
 
 export function Sidebar() {
     return (

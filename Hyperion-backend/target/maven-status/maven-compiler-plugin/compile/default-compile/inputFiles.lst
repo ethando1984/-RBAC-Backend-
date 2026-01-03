@@ -22,6 +22,8 @@ F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\De
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\TaskController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\DashboardController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\RequirePermission.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\LayoutMapper.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\PublicLayoutController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\RequireCategoryPermission.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\AuditLogMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\ArticleController.java
@@ -38,6 +40,7 @@ F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\HyperionBac
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\config\OpenApiConfig.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\CategoryMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\CrawlerController.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\LayoutController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\ArticleVersionMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\IamCenterClient.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\EnhancedIamCenterClient.java
@@ -48,6 +51,7 @@ F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\TagMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\config\SecurityConfig.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\CrawlerMapper.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\Layout.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\service\AuditService.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\StorylineController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\PermissionServiceImpl.java

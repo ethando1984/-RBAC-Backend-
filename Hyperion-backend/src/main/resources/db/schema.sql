@@ -206,3 +206,19 @@ CREATE TABLE IF NOT EXISTS todos (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS layouts (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    slug VARCHAR(255),
+    type VARCHAR(50) NOT NULL, -- STANDALONE, HOMEPAGE, CATEGORY, ARTICLE, EMBED
+    target_id VARCHAR(255),
+    config_json TEXT,
+    is_default BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by_user_id VARCHAR(255),
+    updated_by_user_id VARCHAR(255)
+);
+
+
