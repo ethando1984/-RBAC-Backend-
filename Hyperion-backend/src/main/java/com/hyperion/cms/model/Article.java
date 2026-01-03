@@ -13,6 +13,7 @@ public class Article {
     private String contentHtml;
     private String excerpt;
     private UUID coverMediaId;
+    private String coverMediaUrl; // Transient field for frontend display
     private String sourceName;
     private String sourceUrl;
 

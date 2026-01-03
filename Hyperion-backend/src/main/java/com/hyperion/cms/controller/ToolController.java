@@ -16,11 +16,4 @@ public class ToolController {
         this.permissionService = permissionService;
     }
 
-    @GetMapping("/api/crawler/jobs")
-    public List<Map<String, Object>> getCrawlerJobs() {
-        if (!permissionService.can("crawler", "manage"))
-            throw new AccessDeniedException("Access Denied");
-        return List.of();
-    }
-
 }

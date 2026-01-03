@@ -1,9 +1,11 @@
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\CrawlerResult.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\config\MtlsProperties.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\PermissionAspect.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\ArticleMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\PermissionDecision.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\mapper\StorylineMapper.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\Todo.java
+F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\model\CrawlerJob.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\AuthController.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\PermissionService.java
 F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\controller\TodoController.java

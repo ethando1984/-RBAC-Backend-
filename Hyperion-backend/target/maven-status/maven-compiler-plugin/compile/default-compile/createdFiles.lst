@@ -25,6 +25,7 @@ com\hyperion\cms\model\Tag.class
 com\hyperion\cms\config\CorrelationIdFilter.class
 com\hyperion\cms\config\WebConfig.class
 com\hyperion\cms\controller\StorylineController$MediaAttachRequest.class
+com\hyperion\cms\model\CrawlerResult.class
 com\hyperion\cms\security\PermissionAspect.class
 com\hyperion\cms\mapper\ArticleVersionMapper.class
 com\hyperion\cms\security\RequirePermission.class
@@ -52,6 +53,7 @@ com\hyperion\cms\security\EnhancedIamCenterClient$EvaluateRequest.class
 com\hyperion\cms\model\Task.class
 com\hyperion\cms\controller\SEOController.class
 com\hyperion\cms\handler\UuidTypeHandler.class
+com\hyperion\cms\model\CrawlerJob.class
 com\hyperion\cms\model\Category.class
 com\hyperion\cms\handler\GlobalExceptionHandler$ErrorResponse.class
 com\hyperion\cms\controller\DashboardController.class

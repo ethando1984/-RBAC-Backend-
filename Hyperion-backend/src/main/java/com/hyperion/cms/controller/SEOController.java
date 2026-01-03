@@ -31,7 +31,7 @@ public class SEOController {
         if (!permissionService.can("seo", "read")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing seo:read permission");
         }
-        List<Article> publishedArticles = articleMapper.findAll("PUBLISHED", null, 1000, 0);
+        List<Article> publishedArticles = articleMapper.findAll("PUBLISHED", null, null, null, null, null, 1000, 0);
 
         return Map.of(
                 "totalUrls", publishedArticles.size(),
@@ -42,7 +42,7 @@ public class SEOController {
     @GetMapping(value = "/sitemap.xml", produces = MediaType.APPLICATION_XML_VALUE)
     public String generateSitemap() {
         // Sitemap is public - no permission check needed
-        List<Article> publishedArticles = articleMapper.findAll("PUBLISHED", null, 1000, 0);
+        List<Article> publishedArticles = articleMapper.findAll("PUBLISHED", null, null, null, null, null, 1000, 0);
 
         StringBuilder xml = new StringBuilder();
         xml.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -77,7 +77,7 @@ public class SEOController {
         if (!permissionService.can("seo", "read")) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing seo:read permission");
         }
-        List<Article> allArticles = articleMapper.findAll(null, null, 10000, 0);
+        List<Article> allArticles = articleMapper.findAll(null, null, null, null, null, null, 10000, 0);
 
         int missingMetaDesc = 0;
         int missingSeoTitle = 0;

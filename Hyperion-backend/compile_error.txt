@@ -1,0 +1,138 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------< com.hyperion:hyperion-backend >--------------------
+[INFO] Building hyperion-backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ hyperion-backend ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.11.0:compile (default-compile) @ hyperion-backend ---
+[INFO] Changes detected - recompiling the module! :source
+[INFO] Compiling 59 source files with javac [debug release 17] to target\classes
+[INFO] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/service/CrawlerService.java: F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\service\CrawlerService.java uses or overrides a deprecated API.
+[INFO] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/service/CrawlerService.java: Recompile with -Xlint:deprecation for details.
+[INFO] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/security/PermissionServiceImpl.java: F:\java\rbac-backend\Hyperion-backend\src\main\java\com\hyperion\cms\security\PermissionServiceImpl.java uses unchecked or unsafe operations.
+[INFO] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/security/PermissionServiceImpl.java: Recompile with -Xlint:unchecked for details.
+[INFO] Some messages have been simplified; recompile with -Xdiags:verbose to get full output
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/service/CrawlerService.java:[121,27] incompatible types: java.lang.String cannot be converted to com.hyperion.cms.model.Article.ArticleStatus
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[22,13] cannot find symbol
+  symbol: variable crawlerMapper
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[23,13] cannot find symbol
+  symbol: variable permissionService
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[29,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[32,16] cannot find symbol
+  symbol:   variable crawlerMapper
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[37,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[44,9] cannot find symbol
+  symbol:   variable crawlerMapper
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[50,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[54,9] cannot find symbol
+  symbol:   variable crawlerMapper
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[60,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[63,9] cannot find symbol
+  symbol:   variable crawlerMapper
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[70,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[78,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[81,16] cannot find symbol
+  symbol:   variable crawlerMapper
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[86,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[89,16] cannot find symbol
+  symbol:   variable crawlerMapper
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[94,14] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[97,25] cannot find symbol
+  symbol:   variable permissionService
+  location: class com.hyperion.cms.controller.CrawlerController
+[INFO] 18 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  4.872 s
+[INFO] Finished at: 2026-01-03T17:25:54+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.11.0:compile (default-compile) on project hyperion-backend: Compilation failure: Compilation failure: 
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/service/CrawlerService.java:[121,27] incompatible types: java.lang.String cannot be converted to com.hyperion.cms.model.Article.ArticleStatus
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[22,13] cannot find symbol
+[ERROR]   symbol: variable crawlerMapper
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[23,13] cannot find symbol
+[ERROR]   symbol: variable permissionService
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[29,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[32,16] cannot find symbol
+[ERROR]   symbol:   variable crawlerMapper
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[37,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[44,9] cannot find symbol
+[ERROR]   symbol:   variable crawlerMapper
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[50,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[54,9] cannot find symbol
+[ERROR]   symbol:   variable crawlerMapper
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[60,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[63,9] cannot find symbol
+[ERROR]   symbol:   variable crawlerMapper
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[70,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[78,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[81,16] cannot find symbol
+[ERROR]   symbol:   variable crawlerMapper
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[86,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[89,16] cannot find symbol
+[ERROR]   symbol:   variable crawlerMapper
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[94,14] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] /F:/java/rbac-backend/Hyperion-backend/src/main/java/com/hyperion/cms/controller/CrawlerController.java:[97,25] cannot find symbol
+[ERROR]   symbol:   variable permissionService
+[ERROR]   location: class com.hyperion.cms.controller.CrawlerController
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

@@ -15,17 +15,26 @@ public interface ArticleMapper {
         Article findBySlug(String slug);
 
         @Select("<script>" +
-                        "SELECT * FROM articles " +
+                        "SELECT DISTINCT a.* FROM articles a " +
+                        "<if test='categoryId != null'>LEFT JOIN article_categories ac ON a.id = ac.article_id</if> " +
                         "<where>" +
-                        "  <if test='status != null and status != \"\"'>AND status = #{status}</if>" +
-                        "  <if test='search != null and search != \"\"'>AND (LOWER(title) LIKE LOWER(CONCAT('%', #{search}, '%')))</if>"
+                        "  <if test='status != null and status != \"\"'>AND a.status = #{status}</if>" +
+                        "  <if test='search != null and search != \"\"'>AND (LOWER(a.title) LIKE LOWER(CONCAT('%', #{search}, '%')))</if>"
                         +
+                        "  <if test='categoryId != null'>AND ac.category_id = #{categoryId}</if>" +
+                        "  <if test='authorUserId != null and authorUserId != \"\"'>AND a.author_user_id = #{authorUserId}</if>"
+                        +
+                        "  <if test='startDate != null and startDate != \"\"'>AND a.created_at &gt;= #{startDate}</if>"
+                        +
+                        "  <if test='endDate != null and endDate != \"\"'>AND a.created_at &lt;= #{endDate}</if>" +
                         "</where>" +
-                        "ORDER BY created_at DESC " +
+                        "ORDER BY a.created_at DESC " +
                         "LIMIT #{limit} OFFSET #{offset}" +
                         "</script>")
-        List<Article> findAll(@Param("status") String status, @Param("search") String search, @Param("limit") int limit,
-                        @Param("offset") int offset);
+        List<Article> findAll(@Param("status") String status, @Param("search") String search,
+                        @Param("categoryId") UUID categoryId, @Param("authorUserId") String authorUserId,
+                        @Param("startDate") String startDate, @Param("endDate") String endDate,
+                        @Param("limit") int limit, @Param("offset") int offset);
 
         @Insert("INSERT INTO articles (id, title, subtitle, slug, content_html, excerpt, cover_media_id, source_name, source_url, "
                         +

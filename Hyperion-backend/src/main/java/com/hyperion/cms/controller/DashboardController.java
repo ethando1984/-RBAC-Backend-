@@ -38,10 +38,12 @@ public class DashboardController {
 
         // Article stats
         Map<String, Integer> articleStats = new HashMap<>();
-        articleStats.put("total", articleMapper.findAll(null, null, 10000, 0).size());
-        articleStats.put("published", articleMapper.findAll("PUBLISHED", null, 10000, 0).size());
-        articleStats.put("draft", articleMapper.findAll("DRAFT", null, 10000, 0).size());
-        articleStats.put("pending", articleMapper.findAll("PENDING_EDITORIAL", null, 10000, 0).size());
+        articleStats.put("total", articleMapper.findAll(null, null, null, null, null, null, 10000, 0).size());
+        articleStats.put("published",
+                articleMapper.findAll("PUBLISHED", null, null, null, null, null, 10000, 0).size());
+        articleStats.put("draft", articleMapper.findAll("DRAFT", null, null, null, null, null, 10000, 0).size());
+        articleStats.put("pending",
+                articleMapper.findAll("PENDING_EDITORIAL", null, null, null, null, null, 10000, 0).size());
         stats.put("articles", articleStats);
 
         // Task stats
@@ -69,7 +71,7 @@ public class DashboardController {
         }
 
         Map<String, Object> activity = new HashMap<>();
-        activity.put("recentArticles", articleMapper.findAll(null, null, 5, 0));
+        activity.put("recentArticles", articleMapper.findAll(null, null, null, null, null, null, 5, 0));
         activity.put("recentTasks", taskMapper.findAll(null, null, null, null, 0, 5));
         activity.put("recentAuditLogs", auditLogMapper.findAll(null, null, null, 0, 10));
 

@@ -17,10 +17,13 @@ public class CrawlerController {
 
     private final CrawlerMapper crawlerMapper;
     private final PermissionService permissionService;
+    private final com.hyperion.cms.service.CrawlerService crawlerService;
 
-    public CrawlerController(CrawlerMapper crawlerMapper, PermissionService permissionService) {
+    public CrawlerController(CrawlerMapper crawlerMapper, PermissionService permissionService,
+            com.hyperion.cms.service.CrawlerService crawlerService) {
         this.crawlerMapper = crawlerMapper;
         this.permissionService = permissionService;
+        this.crawlerService = crawlerService;
     }
 
     @GetMapping("/sources")
@@ -60,5 +63,41 @@ public class CrawlerController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing crawler:write permission");
         }
         crawlerMapper.deleteSource(id);
+    }
+
+    // Engine Endpoints
+
+    @PostMapping("/sources/{id}/run")
+    public void runCrawl(@PathVariable UUID id) {
+        if (!permissionService.can("crawler", "execute")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing crawler:execute permission");
+        }
+        crawlerService.triggerCrawl(id);
+    }
+
+    @GetMapping("/jobs")
+    public List<com.hyperion.cms.model.CrawlerJob> listJobs(@RequestParam UUID sourceId) {
+        if (!permissionService.can("crawler", "read")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing crawler:read permission");
+        }
+        return crawlerMapper.findJobsBySourceId(sourceId);
+    }
+
+    @GetMapping("/jobs/{id}/results")
+    public List<com.hyperion.cms.model.CrawlerResult> listResults(@PathVariable UUID id) {
+        if (!permissionService.can("crawler", "read")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing crawler:read permission");
+        }
+        return crawlerMapper.findResultsByJobId(id);
+    }
+
+    @PostMapping("/results/{id}/convert")
+    public java.util.Map<String, UUID> convertToDraft(@PathVariable UUID id) {
+        if (!permissionService.can("articles", "create")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Missing articles:create permission");
+        }
+        String userId = permissionService.getCurrentUserId();
+        UUID articleId = crawlerService.convertToDraft(id, userId);
+        return java.util.Collections.singletonMap("articleId", articleId);
     }
 }

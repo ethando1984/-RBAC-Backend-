@@ -47,9 +47,42 @@ public class ArticleController {
     @RequirePermission(namespace = "articles", action = "read")
     public List<Article> list(@RequestParam(required = false) String status,
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) UUID categoryId,
+            @RequestParam(required = false) String authorUserId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return articleMapper.findAll(status, search, size, page * size);
+        List<Article> articles = articleMapper.findAll(status, search, categoryId, authorUserId, startDate, endDate,
+                size, page * size);
+        // Populate cover media URLs
+        articles.forEach(this::populateCoverMediaUrl);
+        return articles;
+    }
+
+    private void populateCoverMediaUrl(Article article) {
+        if (article.getCoverMediaId() != null) {
+            // For file-based media system, construct URL from media ID
+            // In a real system, you'd query the media_assets table
+            try {
+                java.nio.file.Path storageRoot = java.nio.file.Paths.get("uploads").toAbsolutePath();
+                if (java.nio.file.Files.exists(storageRoot)) {
+                    try (var stream = java.nio.file.Files.list(storageRoot)) {
+                        stream.filter(java.nio.file.Files::isRegularFile)
+                                .filter(path -> {
+                                    String filename = path.getFileName().toString();
+                                    UUID fileId = UUID.nameUUIDFromBytes(filename.getBytes());
+                                    return fileId.equals(article.getCoverMediaId());
+                                })
+                                .findFirst()
+                                .ifPresent(
+                                        path -> article.setCoverMediaUrl("/uploads/" + path.getFileName().toString()));
+                    }
+                }
+            } catch (Exception e) {
+                // Silently fail - coverMediaUrl will remain null
+            }
+        }
     }
 
     @GetMapping("/{id}")
