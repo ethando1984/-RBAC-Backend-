@@ -14,4 +14,17 @@ public interface PermissionService {
     String getCurrentUserId();
 
     String getCurrentUserEmail();
+
+    default void requirePermission(String namespace, String action) {
+        if (!can(namespace, action)) {
+            PermissionDecision decision = PermissionDecision.builder()
+                    .allowed(false)
+                    .namespace(namespace)
+                    .action(action)
+                    .reasonCode(DecisionReason.DENIED_BY_DEFAULT)
+                    .source("MANUAL_CHECK")
+                    .build();
+            throw new PermissionDeniedException(decision);
+        }
+    }
 }

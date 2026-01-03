@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@org.mybatis.spring.annotation.MapperScan("com.hyperion.cms.mapper")
+@org.mybatis.spring.annotation.MapperScan({ "com.hyperion.cms.mapper", "com.hyperion.cms.royalty.mapper" })
 public class HyperionBackendApplication {
     public static void main(String[] args) {
         SpringApplication.run(HyperionBackendApplication.class, args);

@@ -234,3 +234,142 @@ CREATE INDEX IF NOT EXISTS idx_slug_redirects_old_slug ON slug_redirects(old_slu
 
 -- Enable unaccent extension for diacritic-insensitive search (if PostgreSQL)
 -- CREATE EXTENSION IF NOT EXISTS unaccent;
+
+-- ==========================================
+-- ROYALTY MODULE TABLES
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS royalty_rule_sets (
+    id UUID PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'INACTIVE',
+    currency VARCHAR(10) DEFAULT 'VND',
+    effective_from TIMESTAMP,
+    effective_to TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by_user_id VARCHAR(255),
+    created_by_email VARCHAR(255),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by_user_id VARCHAR(255),
+    updated_by_email VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_article_type_rates (
+    id UUID PRIMARY KEY,
+    rule_set_id UUID NOT NULL,
+    article_type VARCHAR(50) NOT NULL,
+    base_amount DECIMAL(19, 2) NOT NULL,
+    FOREIGN KEY (rule_set_id) REFERENCES royalty_rule_sets(id)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_multipliers (
+    id UUID PRIMARY KEY,
+    rule_set_id UUID NOT NULL,
+    multiplier_type VARCHAR(50) NOT NULL,
+    key_name VARCHAR(255) NOT NULL,
+    factor DECIMAL(5, 2) NOT NULL,
+    FOREIGN KEY (rule_set_id) REFERENCES royalty_rule_sets(id)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_media_fees (
+    id UUID PRIMARY KEY,
+    rule_set_id UUID NOT NULL,
+    media_type VARCHAR(50) NOT NULL,
+    fee_amount DECIMAL(19, 2) NOT NULL,
+    fee_mode VARCHAR(50) NOT NULL,
+    max_fee_amount DECIMAL(19, 2),
+    FOREIGN KEY (rule_set_id) REFERENCES royalty_rule_sets(id)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_override_policies (
+    id UUID PRIMARY KEY,
+    rule_set_id UUID NOT NULL,
+    editor_override_max_percent DECIMAL(5, 2),
+    manager_override_max_percent DECIMAL(5, 2),
+    require_note_for_override BOOLEAN DEFAULT TRUE,
+    allow_manual_base_rate_override BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (rule_set_id) REFERENCES royalty_rule_sets(id)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_records (
+    id UUID PRIMARY KEY,
+    article_id UUID NOT NULL,
+    article_slug VARCHAR(255),
+    article_title VARCHAR(255),
+    category_id UUID,
+    category_name VARCHAR(255),
+    article_type VARCHAR(50),
+    word_count INT,
+    author_id VARCHAR(255),
+    author_display_name VARCHAR(255),
+    author_email VARCHAR(255),
+    author_type VARCHAR(50),
+    author_level VARCHAR(50),
+    published_at TIMESTAMP,
+    status VARCHAR(50),
+    calc_snapshot_json TEXT,
+    base_amount DECIMAL(19, 2),
+    multiplier_factor DECIMAL(5, 2),
+    media_fee_total DECIMAL(19, 2),
+    bonus_amount DECIMAL(19, 2),
+    gross_amount DECIMAL(19, 2),
+    override_amount DECIMAL(19, 2),
+    final_amount DECIMAL(19, 2),
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by_user_id VARCHAR(255),
+    created_by_email VARCHAR(255),
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by_user_id VARCHAR(255),
+    updated_by_email VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_approval_histories (
+    id UUID PRIMARY KEY,
+    royalty_record_id UUID NOT NULL,
+    action_type VARCHAR(50) NOT NULL,
+    actor_user_id VARCHAR(255),
+    actor_email VARCHAR(255),
+    old_status VARCHAR(50),
+    new_status VARCHAR(50),
+    old_amount DECIMAL(19, 2),
+    new_amount DECIMAL(19, 2),
+    reason_note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    correlation_id VARCHAR(255),
+    ip_address VARCHAR(255),
+    FOREIGN KEY (royalty_record_id) REFERENCES royalty_records(id)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_payment_batches (
+    id UUID PRIMARY KEY,
+    month_key VARCHAR(7) NOT NULL, -- YYYY-MM
+    status VARCHAR(50),
+    total_items INT,
+    total_amount DECIMAL(19, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by_user_id VARCHAR(255),
+    created_by_email VARCHAR(255),
+    approved_at TIMESTAMP,
+    approved_by_user_id VARCHAR(255),
+    approved_by_email VARCHAR(255),
+    paid_at TIMESTAMP,
+    paid_by_user_id VARCHAR(255),
+    payment_ref VARCHAR(255),
+    export_file_key VARCHAR(1024)
+);
+
+CREATE TABLE IF NOT EXISTS royalty_payment_batch_items (
+    batch_id UUID NOT NULL,
+    royalty_record_id UUID NOT NULL,
+    author_id VARCHAR(255),
+    author_email VARCHAR(255),
+    amount DECIMAL(19, 2),
+    PRIMARY KEY (batch_id, royalty_record_id),
+    FOREIGN KEY (batch_id) REFERENCES royalty_payment_batches(id),
+    FOREIGN KEY (royalty_record_id) REFERENCES royalty_records(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_royalty_records_published_at ON royalty_records(published_at);
+CREATE INDEX IF NOT EXISTS idx_royalty_records_author_id ON royalty_records(author_id);
+CREATE INDEX IF NOT EXISTS idx_royalty_records_status ON royalty_records(status);

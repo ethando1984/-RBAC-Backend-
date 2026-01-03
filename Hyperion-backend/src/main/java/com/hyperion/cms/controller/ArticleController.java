@@ -11,6 +11,7 @@ import com.hyperion.cms.model.ArticleVersion;
 import com.hyperion.cms.mapper.ArticleVersionMapper;
 import com.hyperion.cms.service.AuditService;
 import com.hyperion.cms.service.SlugService;
+import com.hyperion.cms.royalty.service.RoyaltyService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,10 +35,12 @@ public class ArticleController {
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     private final SlugService slugService;
+    private final RoyaltyService royaltyService;
 
     public ArticleController(ArticleMapper articleMapper, ArticleVersionMapper versionMapper, TagMapper tagMapper,
             PermissionService permissionService, AuditService auditService,
-            com.fasterxml.jackson.databind.ObjectMapper objectMapper, SlugService slugService) {
+            com.fasterxml.jackson.databind.ObjectMapper objectMapper, SlugService slugService,
+            RoyaltyService royaltyService) {
         this.articleMapper = articleMapper;
         this.versionMapper = versionMapper;
         this.tagMapper = tagMapper;
@@ -45,6 +48,7 @@ public class ArticleController {
         this.auditService = auditService;
         this.objectMapper = objectMapper;
         this.slugService = slugService;
+        this.royaltyService = royaltyService;
     }
 
     @GetMapping
@@ -167,6 +171,7 @@ public class ArticleController {
         // Re-submit for review if content changed in a published article
         if (contentChanged && existing.getStatus() == Article.ArticleStatus.PUBLISHED) {
             existing.setStatus(Article.ArticleStatus.PENDING_EDITORIAL);
+            royaltyService.voidRoyaltyForArticle(existing.getId().toString());
         }
 
         // Slug handling
@@ -265,6 +270,7 @@ public class ArticleController {
         articleMapper.update(article);
         createVersion(article, "Published now");
         auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
+        royaltyService.calculateRoyaltyForArticle(id.toString());
         return ResponseEntity.ok().build();
     }
 
@@ -295,6 +301,7 @@ public class ArticleController {
         articleMapper.update(article);
         createVersion(article, "Archived");
         auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
+        royaltyService.voidRoyaltyForArticle(id.toString());
         return ResponseEntity.ok().build();
     }
 
@@ -310,6 +317,7 @@ public class ArticleController {
         articleMapper.update(article);
         createVersion(article, "Rejected: " + note);
         auditService.log("WORKFLOW_STATE_CHANGE", "ARTICLE", id.toString(), old, article);
+        royaltyService.voidRoyaltyForArticle(id.toString());
         return ResponseEntity.ok().build();
     }
 

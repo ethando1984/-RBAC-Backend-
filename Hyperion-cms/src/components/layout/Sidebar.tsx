@@ -21,6 +21,9 @@ const navigation = [
     { name: 'Audit Logs', href: '/audit-logs', icon: ClipboardList },
     { name: 'Settings', href: '/settings', icon: Settings },
     { name: 'Layouts', href: '/layouts', icon: LayoutDashboard },
+    { name: 'Royalty Dashboard', href: '/royalties', icon: LayoutDashboard },
+    { name: 'Royalty Records', href: '/royalties/records', icon: CheckSquare },
+    { name: 'Royalty Rules', href: '/royalties/rules', icon: Settings },
 ];
 
 
@@ -39,6 +42,7 @@ export function Sidebar() {
                     <NavLink
                         key={item.name}
                         to={item.href}
+                        end={item.href === '/royalties' || item.href === '/'}
                         className={({ isActive }) =>
                             cn(
                                 'flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group',

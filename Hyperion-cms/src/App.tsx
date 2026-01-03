@@ -19,6 +19,11 @@ import { AuditLogs } from './pages/System/AuditLogs';
 import { Settings } from './pages/System/Settings';
 import { Layouts } from './pages/Design/Layouts';
 import { Login } from './pages/Login';
+import RoyaltyDashboard from './royalties/pages/RoyaltyDashboard';
+import RoyaltyRecordList from './royalties/pages/RoyaltyRecordList';
+import RoyaltyRecordDetail from './royalties/pages/RoyaltyRecordDetail';
+import RoyaltyRules from './royalties/pages/RoyaltyRules';
+import RoyaltyBatches from './royalties/pages/RoyaltyBatches';
 
 const queryClient = new QueryClient();
 
@@ -58,6 +63,13 @@ function Layout() {
               <Route path="/audit-logs" element={<AuditLogs />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/layouts" element={<Layouts />} />
+
+              {/* Royalty Module */}
+              <Route path="/royalties" element={<RoyaltyDashboard />} />
+              <Route path="/royalties/records" element={<RoyaltyRecordList />} />
+              <Route path="/royalties/records/:id" element={<RoyaltyRecordDetail />} />
+              <Route path="/royalties/rules" element={<RoyaltyRules />} />
+              <Route path="/royalties/batches" element={<RoyaltyBatches />} />
               <Route path="*" element={<div className="p-10 text-center text-gray-500">Module coming soon...</div>} />
             </Routes>
           </div>
